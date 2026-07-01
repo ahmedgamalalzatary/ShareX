@@ -36,12 +36,14 @@ using ShareX.UploadersLib.SharingServices;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -95,6 +97,9 @@ namespace ShareX
                     break;
                 case HotkeyType.ClipboardUploadWithContentViewer:
                     UploadManager.ClipboardUploadWithContentViewer(safeTaskSettings);
+                    break;
+                case HotkeyType.PasteClipboardImageToFolder:
+                    PasteClipboardImageToFolder(safeTaskSettings);
                     break;
                 case HotkeyType.UploadText:
                     UploadManager.ShowTextUploadDialog(safeTaskSettings);
@@ -1495,6 +1500,178 @@ namespace ShareX
             });
         }
 
+        public static void PasteClipboardImageToFolder(TaskSettings taskSettings = null)
+        {
+            if (!ClipboardHelpers.ContainsImage())
+            {
+                MessageBox.Show(Resources.ClipboardDoesNotContainAnImage, "ShareX - Paste clipboard image to folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string folder = GetActiveExplorerFolderPath();
+
+            if (string.IsNullOrEmpty(folder))
+            {
+                folder = GetClipboardImagePasteFallbackFolder();
+            }
+
+            if (string.IsNullOrEmpty(folder))
+            {
+                return;
+            }
+
+            using (Bitmap image = ClipboardHelpers.GetImage(true))
+            {
+                if (image == null)
+                {
+                    MessageBox.Show(Resources.ClipboardDoesNotContainAnImage, "ShareX - Paste clipboard image to folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                string filePath = GetClipboardImagePasteFilePath(folder);
+
+                if (ImageHelpers.SaveImage(image, filePath))
+                {
+                    DebugHelper.WriteLine("Clipboard image saved to folder: " + filePath);
+                    PlayNotificationSoundAsync(NotificationSound.ActionCompleted, taskSettings);
+
+                    if (taskSettings == null || taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted)
+                    {
+                        ShowNotificationTip("Clipboard image saved:\r\n" + filePath);
+                    }
+                }
+            }
+        }
+
+        private static string GetClipboardImagePasteFallbackFolder()
+        {
+            string folder = Program.Settings.ClipboardImagePasteFallbackFolder;
+
+            if (!string.IsNullOrEmpty(folder))
+            {
+                folder = FileHelpers.ExpandFolderVariables(folder);
+            }
+
+            if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder))
+            {
+                return folder;
+            }
+
+            string initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string selectedFolder = FileHelpers.BrowseFolder("ShareX - Choose fallback folder for clipboard image paste", initialDirectory);
+
+            if (!string.IsNullOrEmpty(selectedFolder))
+            {
+                Program.Settings.ClipboardImagePasteFallbackFolder = selectedFolder;
+                SettingManager.SaveApplicationConfigAsync();
+                return selectedFolder;
+            }
+
+            return null;
+        }
+
+        private static string GetClipboardImagePasteFilePath(string folder)
+        {
+            string fileName = "Clipboard image " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
+            string filePath = Path.Combine(folder, fileName + ".png");
+            int index = 2;
+
+            while (File.Exists(filePath))
+            {
+                filePath = Path.Combine(folder, $"{fileName} ({index}).png");
+                index++;
+            }
+
+            return filePath;
+        }
+
+        private static string GetActiveExplorerFolderPath()
+        {
+            IntPtr foregroundHandle = NativeMethods.GetForegroundWindow();
+
+            if (foregroundHandle == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            object shellApplication = null;
+            object shellWindows = null;
+
+            try
+            {
+                Type shellApplicationType = Type.GetTypeFromProgID("Shell.Application");
+
+                if (shellApplicationType == null)
+                {
+                    return null;
+                }
+
+                shellApplication = Activator.CreateInstance(shellApplicationType);
+                shellWindows = shellApplicationType.InvokeMember("Windows", BindingFlags.InvokeMethod, null, shellApplication, null);
+
+                if (shellWindows is IEnumerable windows)
+                {
+                    foreach (object window in windows)
+                    {
+                        string folder = GetExplorerWindowFolderPath(window, foregroundHandle);
+
+                        if (!string.IsNullOrEmpty(folder))
+                        {
+                            return folder;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                DebugHelper.WriteException(e);
+            }
+            finally
+            {
+                ReleaseComObject(shellWindows);
+                ReleaseComObject(shellApplication);
+            }
+
+            return null;
+        }
+
+        private static string GetExplorerWindowFolderPath(object shellWindow, IntPtr foregroundHandle)
+        {
+            try
+            {
+                long hwnd = Convert.ToInt64(shellWindow.GetType().InvokeMember("HWND", BindingFlags.GetProperty, null, shellWindow, null));
+
+                if (hwnd != foregroundHandle.ToInt64())
+                {
+                    return null;
+                }
+
+                object document = shellWindow.GetType().InvokeMember("Document", BindingFlags.GetProperty, null, shellWindow, null);
+                object folder = document.GetType().InvokeMember("Folder", BindingFlags.GetProperty, null, document, null);
+                object self = folder.GetType().InvokeMember("Self", BindingFlags.GetProperty, null, folder, null);
+                string path = self.GetType().InvokeMember("Path", BindingFlags.GetProperty, null, self, null) as string;
+
+                if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
+                {
+                    return path;
+                }
+            }
+            catch (Exception e)
+            {
+                DebugHelper.WriteException(e);
+            }
+
+            return null;
+        }
+
+        private static void ReleaseComObject(object comObject)
+        {
+            if (comObject != null && Marshal.IsComObject(comObject))
+            {
+                Marshal.FinalReleaseComObject(comObject);
+            }
+        }
+
         public static void MainFormUploadImage(Bitmap bmp, TaskSettings taskSettings = null)
         {
             Program.MainForm.InvokeSafe(() =>
@@ -2134,6 +2311,7 @@ namespace ShareX
                     case HotkeyType.FolderUpload: return Resources.folder;
                     case HotkeyType.ClipboardUpload: return Resources.clipboard;
                     case HotkeyType.ClipboardUploadWithContentViewer: return Resources.clipboard_task;
+                    case HotkeyType.PasteClipboardImageToFolder: return Resources.clipboard_paste_image;
                     case HotkeyType.UploadText: return Resources.notebook;
                     case HotkeyType.UploadURL: return Resources.drive;
                     case HotkeyType.DragDropUpload: return Resources.inbox;

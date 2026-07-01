@@ -229,6 +229,10 @@ namespace ShareX
         [Category("Clipboard"), DefaultValue(false), Description("Default .NET method can't get image with alpha channel from clipboard. When this setting is true, ShareX checks if clipboard contains \"PNG\" or 32 bit \"DIB\" in order to retain image transparency.")]
         public bool UseAlternativeClipboardGetImage { get; set; }
 
+        [Category("Clipboard"), DefaultValue(""), Description("Fallback folder used by the \"Paste clipboard image to folder\" hotkey when the active window is not Windows File Explorer.")]
+        [Editor(typeof(DirectoryNameEditor), typeof(UITypeEditor))]
+        public string ClipboardImagePasteFallbackFolder { get; set; }
+
         [Category("Image"), DefaultValue(true), Description("If JPEG exif contains orientation data then rotate image accordingly.")]
         public bool RotateImageByExifOrientationData { get; set; }
 
