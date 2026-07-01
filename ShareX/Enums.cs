@@ -199,7 +199,7 @@ namespace ShareX
         [Category(EnumExtensions.HotkeyType_Category_Upload)]
         ClipboardUploadWithContentViewer,
         [Category(EnumExtensions.HotkeyType_Category_Upload)]
-        [Description("Paste clipboard image to folder")]
+        [Description("Paste clipboard content to folder")]
         PasteClipboardImageToFolder,
         [Category(EnumExtensions.HotkeyType_Category_Upload)]
         UploadText,

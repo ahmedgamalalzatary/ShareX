@@ -1502,9 +1502,12 @@ namespace ShareX
 
         public static void PasteClipboardImageToFolder(TaskSettings taskSettings = null)
         {
-            if (!ClipboardHelpers.ContainsImage())
+            bool containsImage = ClipboardHelpers.ContainsImage();
+            bool containsText = ClipboardHelpers.ContainsText();
+
+            if (!containsImage && !containsText)
             {
-                MessageBox.Show(Resources.ClipboardDoesNotContainAnImage, "ShareX - Paste clipboard image to folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Clipboard does not contain a supported image or text.", "ShareX - Paste clipboard content to folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -1520,26 +1523,58 @@ namespace ShareX
                 return;
             }
 
+            if (containsImage)
+            {
+                SaveClipboardImageToFolder(folder, taskSettings);
+            }
+            else
+            {
+                SaveClipboardTextToFolder(folder, taskSettings);
+            }
+        }
+
+        private static void SaveClipboardImageToFolder(string folder, TaskSettings taskSettings)
+        {
             using (Bitmap image = ClipboardHelpers.GetImage(true))
             {
                 if (image == null)
                 {
-                    MessageBox.Show(Resources.ClipboardDoesNotContainAnImage, "ShareX - Paste clipboard image to folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(Resources.ClipboardDoesNotContainAnImage, "ShareX - Paste clipboard content to folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                string filePath = GetClipboardImagePasteFilePath(folder);
+                string filePath = GetClipboardContentPasteFilePath(folder, "Clipboard image", ".png");
 
                 if (ImageHelpers.SaveImage(image, filePath))
                 {
                     DebugHelper.WriteLine("Clipboard image saved to folder: " + filePath);
-                    PlayNotificationSoundAsync(NotificationSound.ActionCompleted, taskSettings);
-
-                    if (taskSettings == null || taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted)
-                    {
-                        ShowNotificationTip("Clipboard image saved:\r\n" + filePath);
-                    }
+                    NotifyClipboardContentSaved(filePath, "Clipboard image saved", taskSettings);
                 }
+            }
+        }
+
+        private static void SaveClipboardTextToFolder(string folder, TaskSettings taskSettings)
+        {
+            string text = ClipboardHelpers.GetText(true);
+
+            if (string.IsNullOrEmpty(text))
+            {
+                MessageBox.Show("Clipboard does not contain text.", "ShareX - Paste clipboard content to folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string filePath = GetClipboardContentPasteFilePath(folder, "Clipboard text", ".txt");
+
+            try
+            {
+                File.WriteAllText(filePath, text, Encoding.UTF8);
+                DebugHelper.WriteLine("Clipboard text saved to folder: " + filePath);
+                NotifyClipboardContentSaved(filePath, "Clipboard text saved", taskSettings);
+            }
+            catch (Exception e)
+            {
+                DebugHelper.WriteException(e);
+                e.ShowError();
             }
         }
 
@@ -1558,7 +1593,7 @@ namespace ShareX
             }
 
             string initialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string selectedFolder = FileHelpers.BrowseFolder("ShareX - Choose fallback folder for clipboard image paste", initialDirectory);
+            string selectedFolder = FileHelpers.BrowseFolder("ShareX - Choose fallback folder for clipboard content paste", initialDirectory);
 
             if (!string.IsNullOrEmpty(selectedFolder))
             {
@@ -1570,15 +1605,25 @@ namespace ShareX
             return null;
         }
 
-        private static string GetClipboardImagePasteFilePath(string folder)
+        private static void NotifyClipboardContentSaved(string filePath, string message, TaskSettings taskSettings)
         {
-            string fileName = "Clipboard image " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
-            string filePath = Path.Combine(folder, fileName + ".png");
+            PlayNotificationSoundAsync(NotificationSound.ActionCompleted, taskSettings);
+
+            if (taskSettings == null || taskSettings.GeneralSettings.ShowToastNotificationAfterTaskCompleted)
+            {
+                ShowNotificationTip(message + ":\r\n" + filePath);
+            }
+        }
+
+        private static string GetClipboardContentPasteFilePath(string folder, string fileNamePrefix, string extension)
+        {
+            string fileName = fileNamePrefix + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
+            string filePath = Path.Combine(folder, fileName + extension);
             int index = 2;
 
             while (File.Exists(filePath))
             {
-                filePath = Path.Combine(folder, $"{fileName} ({index}).png");
+                filePath = Path.Combine(folder, $"{fileName} ({index}){extension}");
                 index++;
             }
 
