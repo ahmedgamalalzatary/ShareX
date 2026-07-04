@@ -27,45 +27,32 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
-using ShareX.ImageEditor.Hosting;
 using ShareX.ImageEditor.Presentation.Theming;
 using ShareX.ImageEditor.Presentation.ViewModels;
-using SkiaSharp;
 
 namespace ShareX.ImageEditor.Presentation.Views;
 
-public partial class BackgroundRemoverWindow : Window
+public partial class IconConverterWindow : Window
 {
     private static readonly Cursor WaitCursor = new(StandardCursorType.Wait);
-    private readonly BackgroundRemoverViewModel _viewModel;
+    private readonly IconConverterViewModel _viewModel;
 
-    public BackgroundRemoverWindow()
-        : this(null)
+    public IconConverterWindow()
     {
-    }
-
-    public BackgroundRemoverWindow(string? modelsFolder)
-        : this(modelsFolder, new BackgroundRemoverOptions())
-    {
-    }
-
-    public BackgroundRemoverWindow(string? modelsFolder, BackgroundRemoverOptions options)
-    {
-        _viewModel = new BackgroundRemoverViewModel(modelsFolder, options);
+        _viewModel = new IconConverterViewModel();
         DataContext = _viewModel;
         InitializeComponent();
         RequestedThemeVariant = ThemeManager.GetCurrentTheme();
         _viewModel.SelectImageFileRequested = SelectImageFileAsync;
-        _viewModel.SaveImageRequested = SaveImageAsync;
-        _viewModel.SaveImageAsRequested = SaveImageAsAsync;
+        _viewModel.SaveIconRequested = SaveIconAsync;
         DragDrop.SetAllowDrop(this, true);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DropEvent, OnDrop);
         _viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(BackgroundRemoverViewModel.IsProcessing))
+            if (e.PropertyName == nameof(IconConverterViewModel.IsBusy))
             {
-                Cursor = _viewModel.IsProcessing ? WaitCursor : null;
+                Cursor = _viewModel.IsBusy ? WaitCursor : null;
             }
         };
         Closed += (_, _) => _viewModel.Dispose();
@@ -88,33 +75,20 @@ public partial class BackgroundRemoverWindow : Window
         return files.Count > 0 ? files[0].Path.LocalPath : null;
     }
 
-    private Task<string?> SaveImageAsync(SKBitmap image, string? sourcePath)
-    {
-        string extension = Path.GetExtension(sourcePath)?.ToLowerInvariant() ?? string.Empty;
-        if (!string.IsNullOrWhiteSpace(sourcePath) && extension is ".png" or ".webp")
-        {
-            SaveImageToFile(image, sourcePath);
-            return Task.FromResult<string?>(sourcePath);
-        }
-
-        return SaveImageAsAsync(image, sourcePath);
-    }
-
-    private async Task<string?> SaveImageAsAsync(SKBitmap image, string? sourcePath)
+    private async Task<string?> SaveIconAsync(byte[] icon, string? sourcePath)
     {
         string suggestedFileName = string.IsNullOrWhiteSpace(sourcePath)
-            ? "image-output.png"
-            : $"{Path.GetFileNameWithoutExtension(sourcePath)}-output.png";
+            ? "icon.ico"
+            : $"{Path.GetFileNameWithoutExtension(sourcePath)}.ico";
 
         IStorageFile? file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Save image as",
+            Title = "Save icon as",
             SuggestedFileName = suggestedFileName,
-            DefaultExtension = "png",
+            DefaultExtension = "ico",
             FileTypeChoices =
             [
-                new FilePickerFileType("PNG") { Patterns = ["*.png"] },
-                new FilePickerFileType("WebP") { Patterns = ["*.webp"] }
+                new FilePickerFileType("Icon file") { Patterns = ["*.ico"] }
             ]
         });
 
@@ -124,32 +98,20 @@ public partial class BackgroundRemoverWindow : Window
         }
 
         string filePath = file.Path.LocalPath;
-        SaveImageToFile(image, filePath);
+        await File.WriteAllBytesAsync(filePath, icon);
         return filePath;
-    }
-
-    private static void SaveImageToFile(SKBitmap image, string filePath)
-    {
-        SKEncodedImageFormat format = Path.GetExtension(filePath).Equals(".webp", StringComparison.OrdinalIgnoreCase)
-            ? SKEncodedImageFormat.Webp
-            : SKEncodedImageFormat.Png;
-
-        using SKImage skImage = SKImage.FromBitmap(image);
-        using SKData data = skImage.Encode(format, 100);
-        using FileStream stream = File.Create(filePath);
-        data.SaveTo(stream);
     }
 
     private void OnDragOver(object? sender, DragEventArgs e)
     {
-        e.DragEffects = !_viewModel.IsProcessing && e.DataTransfer.Formats.Contains(DataFormat.File)
+        e.DragEffects = !_viewModel.IsBusy && e.DataTransfer.Formats.Contains(DataFormat.File)
             ? DragDropEffects.Copy
             : DragDropEffects.None;
     }
 
     private void OnDrop(object? sender, DragEventArgs e)
     {
-        if (_viewModel.IsProcessing)
+        if (_viewModel.IsBusy)
         {
             return;
         }
@@ -173,21 +135,5 @@ public partial class BackgroundRemoverWindow : Window
             _viewModel.LoadImage(file.Path.LocalPath);
             e.Handled = true;
         }
-    }
-
-    private void OnNotificationPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        _viewModel.DismissNotification();
-        e.Handled = true;
-    }
-
-    private void OnNotificationPointerEntered(object? sender, PointerEventArgs e)
-    {
-        _viewModel.SetNotificationHoverState(true);
-    }
-
-    private void OnNotificationPointerExited(object? sender, PointerEventArgs e)
-    {
-        _viewModel.SetNotificationHoverState(false);
     }
 }

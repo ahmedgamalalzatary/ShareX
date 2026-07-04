@@ -1762,6 +1762,11 @@ namespace ShareX
             TaskHelpers.OpenImageComparer();
         }
 
+        private void tsmiIconConverter_Click(object sender, EventArgs e)
+        {
+            TaskHelpers.OpenIconConverter();
+        }
+
         private void tsmiImageCombiner_Click(object sender, EventArgs e)
         {
             TaskHelpers.OpenImageCombiner();

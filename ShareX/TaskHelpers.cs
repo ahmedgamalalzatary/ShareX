@@ -270,7 +270,7 @@ namespace ShareX
                     }
                     break;
                 case HotkeyType.BackgroundRemover:
-                    OpenBackgroundRemover();
+                    OpenBackgroundRemover(safeTaskSettings);
                     break;
                 case HotkeyType.ImageComparer:
                     OpenImageComparer();
@@ -1021,9 +1021,16 @@ namespace ShareX
             AvaloniaIntegration.ShowImageComparerWindow();
         }
 
-        public static void OpenBackgroundRemover()
+        public static void OpenIconConverter()
         {
-            AvaloniaIntegration.ShowBackgroundRemoverWindow(Program.ModelsFolder);
+            AvaloniaIntegration.ShowIconConverterWindow();
+        }
+
+        public static void OpenBackgroundRemover(TaskSettings taskSettings = null)
+        {
+            if (taskSettings == null) taskSettings = TaskSettings.GetDefaultTaskSettings();
+
+            AvaloniaIntegration.ShowBackgroundRemoverWindow(Program.ModelsFolder, taskSettings.ToolsSettingsReference.BackgroundRemoverOptions);
         }
 
         public static void CombineImages(IEnumerable<string> imageFiles, Orientation orientation, TaskSettings taskSettings = null)

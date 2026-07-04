@@ -466,6 +466,7 @@ namespace ShareX
         public BorderlessWindowSettings BorderlessWindowSettings = new BorderlessWindowSettings();
         public AIOptions AIOptions = new AIOptions();
         public ImageEditorOptions ImageEditorOptions = new ImageEditorOptions();
+        public BackgroundRemoverOptions BackgroundRemoverOptions = new BackgroundRemoverOptions();
         public bool UseLegacyImageEditor = false;
         public bool ShowImageEditorSelector = true;
     }

@@ -40,12 +40,16 @@ public sealed partial class BackgroundRemoverViewModel : ViewModelBase, IDisposa
 {
     private const string BackgroundRemoverGuideUrl = "https://getsharex.com/docs/background-remover";
     private readonly BackgroundRemovalService _backgroundRemovalService = new();
+    private readonly BackgroundRemoverOptions _options;
     private SKBitmap? _sourceBitmap;
     private SKBitmap? _resultBitmap;
 
-    public BackgroundRemoverViewModel(string? modelsFolder)
+    public BackgroundRemoverViewModel(string? modelsFolder, BackgroundRemoverOptions options)
     {
         ModelsFolder = modelsFolder;
+        _options = options;
+        SelectedDevice = Enum.IsDefined(options.SelectedDevice) ? options.SelectedDevice : BackgroundRemovalDevice.Auto;
+        _options.SelectedDevice = SelectedDevice;
         RefreshModels();
     }
 
@@ -63,6 +67,19 @@ public sealed partial class BackgroundRemoverViewModel : ViewModelBase, IDisposa
     [NotifyPropertyChangedFor(nameof(CanRemoveBackground))]
     [NotifyCanExecuteChangedFor(nameof(RemoveBackgroundCommand))]
     private BackgroundRemovalModel? _selectedModel;
+
+    partial void OnSelectedDeviceChanged(BackgroundRemovalDevice value)
+    {
+        _options.SelectedDevice = value;
+    }
+
+    partial void OnSelectedModelChanged(BackgroundRemovalModel? value)
+    {
+        if (value != null)
+        {
+            _options.SelectedModelFileName = value.FileName;
+        }
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasImage))]
@@ -115,7 +132,7 @@ public sealed partial class BackgroundRemoverViewModel : ViewModelBase, IDisposa
     [RelayCommand(CanExecute = nameof(CanRefreshModels))]
     private void RefreshModels()
     {
-        string? selectedModelPath = SelectedModel?.FilePath;
+        string? selectedModelFileName = SelectedModel?.FileName ?? _options.SelectedModelFileName;
 
         AvailableModels.Clear();
         SelectedModel = null;
@@ -142,7 +159,7 @@ public sealed partial class BackgroundRemoverViewModel : ViewModelBase, IDisposa
             }
 
             SelectedModel = AvailableModels.FirstOrDefault(model =>
-                string.Equals(model.FilePath, selectedModelPath, StringComparison.OrdinalIgnoreCase))
+                string.Equals(model.FileName, selectedModelFileName, StringComparison.OrdinalIgnoreCase))
                 ?? AvailableModels.FirstOrDefault();
         }
         catch (Exception ex)

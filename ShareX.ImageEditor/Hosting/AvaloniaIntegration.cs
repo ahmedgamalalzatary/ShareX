@@ -116,13 +116,29 @@ namespace ShareX.ImageEditor.Hosting
             });
         }
 
-        public static void ShowBackgroundRemoverWindow(string? modelsFolder)
+        public static void ShowIconConverterWindow()
         {
             Initialize();
 
             Dispatcher.UIThread.Post(() =>
             {
-                BackgroundRemoverWindow window = new BackgroundRemoverWindow(modelsFolder);
+                IconConverterWindow window = new IconConverterWindow();
+                window.Show();
+            });
+        }
+
+        public static void ShowBackgroundRemoverWindow(string? modelsFolder)
+        {
+            ShowBackgroundRemoverWindow(modelsFolder, new BackgroundRemoverOptions());
+        }
+
+        public static void ShowBackgroundRemoverWindow(string? modelsFolder, BackgroundRemoverOptions options)
+        {
+            Initialize();
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                BackgroundRemoverWindow window = new BackgroundRemoverWindow(modelsFolder, options);
                 window.Show();
             });
         }

@@ -529,6 +529,12 @@
   <data name="tsmiImageComparer.Text" xml:space="preserve">
     <value>Image comparer...</value>
   </data>
+  <data name="tsmiIconConverter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>194, 22</value>
+  </data>
+  <data name="tsmiIconConverter.Text" xml:space="preserve">
+    <value>Icon converter...</value>
+  </data>
   <data name="tsmiImageCombiner.Size" type="System.Drawing.Size, System.Drawing">
     <value>194, 22</value>
   </data>
@@ -1611,6 +1617,12 @@
   <data name="tsmiTrayImageComparer.Text" xml:space="preserve">
     <value>Image comparer...</value>
   </data>
+  <data name="tsmiTrayIconConverter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>194, 22</value>
+  </data>
+  <data name="tsmiTrayIconConverter.Text" xml:space="preserve">
+    <value>Icon converter...</value>
+  </data>
   <data name="tsmiTrayImageCombiner.Size" type="System.Drawing.Size, System.Drawing">
     <value>194, 22</value>
   </data>
@@ -2358,6 +2370,12 @@
     <value>tsmiImageComparer</value>
   </data>
   <data name="&gt;&gt;tsmiImageComparer.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tsmiIconConverter.Name" xml:space="preserve">
+    <value>tsmiIconConverter</value>
+  </data>
+  <data name="&gt;&gt;tsmiIconConverter.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;tsmiImageCombiner.Name" xml:space="preserve">
@@ -3294,6 +3312,12 @@
     <value>tsmiTrayImageComparer</value>
   </data>
   <data name="&gt;&gt;tsmiTrayImageComparer.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tsmiTrayIconConverter.Name" xml:space="preserve">
+    <value>tsmiTrayIconConverter</value>
+  </data>
+  <data name="&gt;&gt;tsmiTrayIconConverter.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;tsmiTrayImageCombiner.Name" xml:space="preserve">
