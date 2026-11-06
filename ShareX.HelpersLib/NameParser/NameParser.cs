@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -51,6 +51,9 @@ namespace ShareX.HelpersLib
         public string WindowText { get; set; } // %t
         public string ProcessName { get; set; } // %pn
         public TimeZoneInfo CustomTimeZone { get; set; }
+
+        // %rf reads from the local file system and must only be enabled for trusted patterns.
+        public bool AllowFileRead { get; set; } = true;
 
         // If we're trying to preview via TaskSettings or not
         // Used so that %rf throws "File not found" exceptions and brings up a popup on upload
@@ -246,6 +249,12 @@ namespace ShareX.HelpersLib
 
             foreach (Tuple<string, string> entry in ListEntryWithArgument(result, CodeMenuEntryFilename.rf.ToPrefixString()))
             {
+                if (!AllowFileRead)
+                {
+                    result = result.Replace(entry.Item1, "");
+                    continue;
+                }
+
                 result = result.ReplaceAll(entry.Item1, () =>
                 {
                     try
@@ -258,7 +267,7 @@ namespace ShareX.HelpersLib
                         }
                         else
                         {
-                            throw new Exception("Valid text file path is required.");
+                            throw new Exception(Localization.Strings.NameParser_Valid_text_file_required);
                         }
                     }
                     catch (Exception e) when (IsPreviewMode)

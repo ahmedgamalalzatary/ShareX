@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class SepiaImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "sepia";
     public override string Name => "Sepia";
-    public override string IconKey => LucideIcons.coffee;
+    public override string IconKey => ImageEffectIcons.Coffee;
     public override string Description => "Applies a sepia tone effect.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

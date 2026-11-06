@@ -29,7 +29,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using ShareX.ImageEditor.Presentation.Views;
+using ShareX.AvaloniaUI.Windows;
 
 namespace ShareX.ImageEditor.Presentation.Controls
 {
@@ -115,11 +115,11 @@ namespace ShareX.ImageEditor.Presentation.Controls
             try
             {
                 var picker = new ScreenColorPickerWindow();
-                Color? color = await picker.PickAsync(owner);
+                ScreenColorPickerResult? result = await picker.PickAsync(owner);
 
-                if (color.HasValue)
+                if (result != null)
                 {
-                    SelectedColorValue = color.Value;
+                    SelectedColorValue = result.Color;
                 }
             }
             finally

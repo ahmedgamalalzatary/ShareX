@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class InnerShadowImageEffect : ImageEffectBase
     public override string Id => "inner_shadow";
     public override string Name => "Inner shadow";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.square_dashed;
+    public override string IconKey => ImageEffectIcons.SquareDashed;
     public override string Description => "Adds an inner shadow along the edges of opaque regions.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>
@@ -158,7 +158,8 @@ public sealed class InnerShadowImageEffect : ImageEffectBase
 
         using SKBitmap blurredExpanded = new(expandedWidth, expandedHeight, source.ColorType, source.AlphaType);
         using (SKCanvas blurCanvas = new(blurredExpanded))
-        using (SKPaint blurPaint = new() { ImageFilter = SKImageFilter.CreateBlur(sigma, sigma) })
+        using (var ownedImageFilter1 = SKImageFilter.CreateBlur(sigma, sigma))
+        using (SKPaint blurPaint = new() { ImageFilter = ownedImageFilter1 })
         {
             blurCanvas.DrawBitmap(expanded, 0, 0, blurPaint);
         }

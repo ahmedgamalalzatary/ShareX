@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class BlurImageEffect : ImageEffectBase
     public override string Id => "blur";
     public override string Name => "Blur";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.focus;
+    public override string IconKey => ImageEditorIcons.Blur;
     public override string Description => "Applies a blur effect.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -54,7 +54,7 @@ public sealed class BlurImageEffect : ImageEffectBase
         int expandedHeight = source.Height + padding * 2;
 
         // Create expanded bitmap with edge pixels extended
-        SKBitmap expanded = new SKBitmap(expandedWidth, expandedHeight, source.ColorType, source.AlphaType);
+        using SKBitmap expanded = new SKBitmap(expandedWidth, expandedHeight, source.ColorType, source.AlphaType);
         using (SKCanvas expandCanvas = new SKCanvas(expanded))
         {
             // Fill with edge-extended version using clamp shader
@@ -65,16 +65,16 @@ public sealed class BlurImageEffect : ImageEffectBase
         }
 
         // Apply blur to expanded bitmap
-        SKBitmap blurred = new SKBitmap(expandedWidth, expandedHeight, source.ColorType, source.AlphaType);
+        using SKBitmap blurred = new SKBitmap(expandedWidth, expandedHeight, source.ColorType, source.AlphaType);
         using (SKCanvas blurCanvas = new SKCanvas(blurred))
         {
+            using var ownedImageFilter1 = SKImageFilter.CreateBlur(Radius, Radius);
             using SKPaint blurPaint = new SKPaint
             {
-                ImageFilter = SKImageFilter.CreateBlur(Radius, Radius)
+                ImageFilter = ownedImageFilter1
             };
             blurCanvas.DrawBitmap(expanded, 0, 0, blurPaint);
         }
-        expanded.Dispose();
 
         // Crop back to original size
         SKBitmap result = new SKBitmap(source.Width, source.Height, source.ColorType, source.AlphaType);
@@ -83,7 +83,6 @@ public sealed class BlurImageEffect : ImageEffectBase
             resultCanvas.DrawBitmap(blurred, new SKRect(padding, padding, padding + source.Width, padding + source.Height),
                 new SKRect(0, 0, source.Width, source.Height));
         }
-        blurred.Dispose();
 
         return result;
     }

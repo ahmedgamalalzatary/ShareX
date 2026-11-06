@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Manipulations;
@@ -35,7 +35,7 @@ public sealed class FisheyeLensImageEffect : ImageEffectBase
     public override string Id => "fisheye_lens";
     public override string Name => "Fisheye lens";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.circle_gauge;
+    public override string IconKey => ImageEffectIcons.Gauge;
     public override string Description => "Applies a fisheye lens distortion effect.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

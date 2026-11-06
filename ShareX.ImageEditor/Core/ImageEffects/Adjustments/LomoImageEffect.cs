@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class LomoImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "lomo";
     public override string Name => "Lomo";
-    public override string IconKey => LucideIcons.aperture;
+    public override string IconKey => ImageEffectIcons.Aperture;
     public override string Description => "Applies a lomography look with high contrast, warm tones, and vignette.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -78,13 +78,14 @@ public sealed class LomoImageEffect : AdjustmentImageEffectBase
         float cx = w / 2f, cy = h / 2f;
         float radius = MathF.Sqrt(w * w + h * h) * 0.5f;
 
-        using SKPaint vigPaint = new()
-        {
-            Shader = SKShader.CreateRadialGradient(
+        using var ownedShader1 = SKShader.CreateRadialGradient(
                 new SKPoint(cx, cy), radius,
                 [SKColors.Transparent, new SKColor(0, 0, 0, (byte)(180 * s))],
                 [0.5f, 1f],
-                SKShaderTileMode.Clamp)
+                SKShaderTileMode.Clamp);
+        using SKPaint vigPaint = new()
+        {
+            Shader = ownedShader1
         };
         canvas.DrawRect(0, 0, w, h, vigPaint);
 

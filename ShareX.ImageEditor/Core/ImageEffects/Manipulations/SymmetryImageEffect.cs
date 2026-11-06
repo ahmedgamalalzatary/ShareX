@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Manipulations;
@@ -42,7 +42,7 @@ public sealed class SymmetryImageEffect : ImageEffectBase
     public override string Id => "symmetry";
     public override string Name => "Symmetry";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.flip_horizontal_2;
+    public override string IconKey => ImageEffectIcons.FlipHorizontal;
     public override string Description => "Creates bilateral symmetry by mirroring one half of the image.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

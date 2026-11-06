@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class PosterizeImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "posterize";
     public override string Name => "Posterize";
-    public override string IconKey => LucideIcons.layers_3;
+    public override string IconKey => AppIcons.Layers;
     public override string Description => "Reduces the number of colors to create a poster-like effect.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

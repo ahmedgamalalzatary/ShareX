@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class OrnateScrollBorderImageEffect : ImageEffectBase
     public override string Id => "ornate_scroll_border";
     public override string Name => "Ornate scroll border";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.scroll;
+    public override string IconKey => ImageEffectIcons.Scroll;
     public override string Description => "Adds an elegant Victorian-style ornate border with decorative corner scrollwork and double-line detailing.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -95,13 +95,14 @@ public sealed class OrnateScrollBorderImageEffect : ImageEffectBase
         canvas.DrawBitmap(source, border, border);
 
         // Subtle inner shadow over image edge
+        using (var ownedShader1 = SKShader.CreateLinearGradient(
+                new SKPoint(b, b), new SKPoint(b + border * 0.15f, b + border * 0.15f),
+                [new SKColor(0, 0, 0, 45), SKColors.Transparent], SKShaderTileMode.Clamp))
         using (SKPaint innerShadow = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(
-                new SKPoint(b, b), new SKPoint(b + border * 0.15f, b + border * 0.15f),
-                [new SKColor(0, 0, 0, 45), SKColors.Transparent], SKShaderTileMode.Clamp)
+            Shader = ownedShader1
         })
         {
             canvas.DrawRect(b, b, source.Width, source.Height, innerShadow);

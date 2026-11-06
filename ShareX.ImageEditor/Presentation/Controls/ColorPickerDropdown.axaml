@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconControls="using:ShareX.AvaloniaUI.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:ShareX.ImageEditor.Presentation.Controls"
@@ -10,7 +11,6 @@
     <Grid>
         <!-- Dropdown Button -->
         <Button x:Name="DropdownButton"
-                Classes="editor-button"
                 Click="OnDropdownButtonClick"
                 Height="40"
                 MinWidth="60"
@@ -22,18 +22,18 @@
                       Height="24" 
                       VerticalAlignment="Center" 
                       Margin="0,0,6,0">
-                    
+
                     <!-- Checkered Background -->
                     <Border CornerRadius="4" ClipToBounds="True">
                         <Border.Background>
                             <DynamicResource ResourceKey="ShareX.Brush.Checkered.Small"/>
                         </Border.Background>
                     </Border>
-                    
+
                     <!-- Color Overlay -->
                     <Border Background="{Binding SelectedColor, ElementName=ColorPickerDropdownRoot}"
                             CornerRadius="4"/>
-                    
+
                     <!-- Border Color: Hole in center showing checkered through -->
                     <Border IsVisible="{Binding ShowBorderHole, ElementName=ColorPickerDropdownRoot}"
                             Margin="5"
@@ -44,7 +44,7 @@
                             <DynamicResource ResourceKey="ShareX.Brush.Checkered.Small"/>
                         </Border.Background>
                     </Border>
-                    
+
                     <!-- Text Color: Plain 'A' label -->
                     <TextBlock Text="A"
                                IsVisible="{Binding ShowTextLabel, ElementName=ColorPickerDropdownRoot}"
@@ -60,16 +60,14 @@
                 <!-- Spacer -->
                 <Border Grid.Column="1"/>
 
-                <!-- Chevron Icon (Lucide ChevronDown) -->
-                <TextBlock Grid.Column="2"
-                           Classes="dropdown-chevron"
-                           Classes.open="{Binding #ColorPopup.IsOpen}"
-                           Text="{x:Static theming:EditorIcons.ChevronDown}"
-                           FontFamily="{DynamicResource ShareX.FontFamily.Icon}"
-                           FontWeight="Normal"
-                           FontSize="10"
-                           Foreground="{DynamicResource ShareX.Brush.Text.Secondary}"
-                           VerticalAlignment="Center"/>
+                <!-- Chevron icon -->
+                <iconControls:IconPresenter Grid.Column="2"
+                                            Classes="dropdown-chevron"
+                                            Classes.open="{Binding #ColorPopup.IsOpen}"
+                                            Icon="{x:Static theming:EditorIcons.ChevronDown}"
+                                            FontSize="10"
+                                            Foreground="{DynamicResource ShareX.Brush.Text.Secondary}"
+                                            VerticalAlignment="Center"/>
             </Grid>
         </Button>
 

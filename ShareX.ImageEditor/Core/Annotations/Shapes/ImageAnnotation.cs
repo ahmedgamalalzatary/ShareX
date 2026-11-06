@@ -30,10 +30,11 @@ namespace ShareX.ImageEditor.Core.Annotations;
 /// <summary>
 /// Image annotation - stickers or inserted images
 /// </summary>
-public class ImageAnnotation : Annotation, IDisposable
+public partial class ImageAnnotation : Annotation, IDisposable
 {
     public override AnnotationCategory Category => AnnotationCategory.Shapes;
     private SKBitmap? _imageBitmap;
+    internal bool IsDisposed { get; private set; }
 
     /// <summary>
     /// File path to the image (if external)
@@ -67,6 +68,7 @@ public class ImageAnnotation : Annotation, IDisposable
 
     public void SetImage(SKBitmap bitmap)
     {
+        if (ReferenceEquals(_imageBitmap, bitmap)) return;
         _imageBitmap?.Dispose();
         _imageBitmap = bitmap;
     }
@@ -81,17 +83,7 @@ public class ImageAnnotation : Annotation, IDisposable
     {
         var bounds = GetBounds();
 
-        if (RotationAngle != 0)
-        {
-            float cx = bounds.MidX;
-            float cy = bounds.MidY;
-            float rad = -RotationAngle * (float)Math.PI / 180f;
-            float cos = (float)Math.Cos(rad);
-            float sin = (float)Math.Sin(rad);
-            float dx = point.X - cx;
-            float dy = point.Y - cy;
-            point = new SKPoint(cx + dx * cos - dy * sin, cy + dx * sin + dy * cos);
-        }
+        point = GetUnrotatedPoint(point, bounds);
 
         var inflated = SKRect.Inflate(bounds, tolerance, tolerance);
         return inflated.Contains(point);
@@ -102,6 +94,7 @@ public class ImageAnnotation : Annotation, IDisposable
     /// </summary>
     public void Dispose()
     {
+        IsDisposed = true;
         _imageBitmap?.Dispose();
         _imageBitmap = null;
         GC.SuppressFinalize(this);
@@ -111,6 +104,7 @@ public class ImageAnnotation : Annotation, IDisposable
     {
         var clone = (ImageAnnotation)base.Clone();
         // Deep-copy bitmap for undo/redo to properly preserve image data
+        clone.IsDisposed = false;
         clone._imageBitmap = _imageBitmap?.Copy();
         return clone;
     }

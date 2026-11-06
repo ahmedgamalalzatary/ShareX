@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using CommunityToolkit.Mvvm.Input;
+using ShareX.ImageEditor.Localization;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -34,16 +35,19 @@ public sealed class ToolbarCustomizationDialogViewModel : ViewModelBase
 {
     private readonly Action<IReadOnlyList<ToolbarCustomizationItemViewModel>> _onSave;
     private readonly Action _onCancel;
+    private readonly Func<IReadOnlyList<ToolbarCustomizationItemViewModel>> _createDefaultItems;
     private string _validationMessage = "";
     private ToolbarCustomizationItemViewModel? _selectedItem;
 
     public ToolbarCustomizationDialogViewModel(
         IEnumerable<ToolbarCustomizationItemViewModel> sourceItems,
         Action<IReadOnlyList<ToolbarCustomizationItemViewModel>> onSave,
-        Action onCancel)
+        Action onCancel,
+        Func<IReadOnlyList<ToolbarCustomizationItemViewModel>>? createDefaultItems = null)
     {
         _onSave = onSave;
         _onCancel = onCancel;
+        _createDefaultItems = createDefaultItems ?? ToolbarCustomizationItemViewModel.CreateDefaultItems;
         Items = new ObservableCollection<ToolbarCustomizationItemViewModel>(sourceItems.Select(item => item.Clone()));
         Items.CollectionChanged += OnItemsCollectionChanged;
 
@@ -133,7 +137,7 @@ public sealed class ToolbarCustomizationDialogViewModel : ViewModelBase
 
         Items.Clear();
 
-        foreach (ToolbarCustomizationItemViewModel item in ToolbarCustomizationItemViewModel.CreateDefaultItems())
+        foreach (ToolbarCustomizationItemViewModel item in _createDefaultItems())
         {
             Items.Add(item);
         }
@@ -216,14 +220,14 @@ public sealed class ToolbarCustomizationDialogViewModel : ViewModelBase
 
             if (!ToolbarHotkeyHelper.TryParse(hotkey, out _, out _))
             {
-                ValidationMessage = $"Invalid hotkey for {item.Name}. Use formats like R, Ctrl+R, or Ctrl+Shift+R.";
+                ValidationMessage = string.Format(Strings.ToolbarCustomizationDialogView_InvalidHotkey, item.Name);
                 return;
             }
 
             string normalizedHotkey = ToolbarHotkeyHelper.Normalize(hotkey);
             if (usedHotkeys.TryGetValue(normalizedHotkey, out ToolbarCustomizationItemViewModel? existingItem))
             {
-                ValidationMessage = $"{item.Name} and {existingItem.Name} use the same hotkey ({normalizedHotkey}).";
+                ValidationMessage = string.Format(Strings.ToolbarCustomizationDialogView_DuplicateHotkey, item.Name, existingItem.Name, normalizedHotkey);
                 return;
             }
 

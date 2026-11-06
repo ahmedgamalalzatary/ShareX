@@ -25,9 +25,10 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using ShareX.ImageEditor.Core.Annotations;
-using ShareX.ImageEditor.Hosting;
+using ShareX.ImageEditor.Integration;
 using ShareX.ImageEditor.Presentation.Controls;
 using ShareX.ImageEditor.Presentation.Rendering;
 using ShareX.ImageEditor.Presentation.ViewModels;
@@ -53,6 +54,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
         internal void RefreshSpotlightOverlay()
         {
+            if (_workspaceDisposed) return;
             var spotlightOverlay = this.FindControl<SpotlightOverlayControl>("SpotlightOverlayControl");
             var annotationCanvas = this.FindControl<Canvas>("AnnotationCanvas");
             if (spotlightOverlay == null || annotationCanvas == null)
@@ -75,10 +77,24 @@ namespace ShareX.ImageEditor.Presentation.Views
 
         private void RenderCore()
         {
-            if (_canvasControl == null) return;
+            if (_workspaceDisposed || _canvasControl == null) return;
             // Hybrid rendering: Render only background + raster effects from Core
             // Vector annotations are handled by Avalonia Canvas
             _canvasControl.Draw(canvas => _editorCore.Render(canvas));
+        }
+
+        private void RequestRenderCore()
+        {
+            if (Interlocked.Exchange(ref _renderCorePending, 1) != 0)
+            {
+                return;
+            }
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                Interlocked.Exchange(ref _renderCorePending, 0);
+                RenderCore();
+            }, Avalonia.Threading.DispatcherPriority.Render);
         }
 
         public SkiaSharp.SKBitmap? GetSource()
@@ -168,9 +184,103 @@ namespace ShareX.ImageEditor.Presentation.Views
             }
         }
 
+        /// <summary>
+        /// Renders an image-pixel rectangle from the shared workspace. Hosts such as region
+        /// capture can avoid allocating a second full-size virtual-desktop bitmap.
+        /// </summary>
+        public SkiaSharp.SKBitmap? GetSnapshot(Rect sourceRectangle)
+        {
+            SkiaSharp.SKBitmap? sourceImage = _editorCore.SourceImage;
+            if (sourceImage == null)
+            {
+                return null;
+            }
+
+            Rect imageBounds = new Rect(0, 0, sourceImage.Width, sourceImage.Height);
+            Rect clipped = sourceRectangle.Intersect(imageBounds);
+            if (clipped.Width <= 0 || clipped.Height <= 0)
+            {
+                return null;
+            }
+
+            int left = Math.Clamp((int)Math.Floor(clipped.Left), 0, sourceImage.Width - 1);
+            int top = Math.Clamp((int)Math.Floor(clipped.Top), 0, sourceImage.Height - 1);
+            int right = Math.Clamp((int)Math.Ceiling(clipped.Right), left + 1, sourceImage.Width);
+            int bottom = Math.Clamp((int)Math.Ceiling(clipped.Bottom), top + 1, sourceImage.Height);
+            int width = right - left;
+            int height = bottom - top;
+
+            if (width <= 0 || height <= 0)
+            {
+                return null;
+            }
+
+            if (_editorCore.Annotations.Count == 0)
+            {
+                SkiaSharp.SKBitmap output = new(new SkiaSharp.SKImageInfo(
+                    width,
+                    height,
+                    sourceImage.ColorType,
+                    sourceImage.AlphaType));
+                using SkiaSharp.SKCanvas canvas = new(output);
+                canvas.DrawBitmap(
+                    sourceImage,
+                    new SkiaSharp.SKRect(left, top, right, bottom),
+                    new SkiaSharp.SKRect(0, 0, width, height));
+                return output;
+            }
+
+            Border? previewFrame = this.FindControl<Border>("PreviewFrame");
+            Canvas? overlayCanvas = this.FindControl<Canvas>("OverlayCanvas");
+            if (previewFrame == null)
+            {
+                return null;
+            }
+
+            bool overlayWasVisible = overlayCanvas?.IsVisible ?? false;
+            if (overlayCanvas != null)
+            {
+                overlayCanvas.IsVisible = false;
+            }
+
+            try
+            {
+                previewFrame.Measure(Size.Infinity);
+                previewFrame.Arrange(new Rect(0, 0, sourceImage.Width, sourceImage.Height));
+
+                using RenderTargetBitmap renderTarget = new(
+                    new PixelSize(width, height),
+                    new Vector(96, 96));
+                VisualBrush brush = new(previewFrame)
+                {
+                    SourceRect = new RelativeRect(new Rect(left, top, width, height), RelativeUnit.Absolute),
+                    DestinationRect = RelativeRect.Fill,
+                    Stretch = Stretch.Fill,
+                    TileMode = TileMode.None
+                };
+
+                using (DrawingContext context = renderTarget.CreateDrawingContext())
+                {
+                    context.DrawRectangle(brush, null, new Rect(0, 0, width, height));
+                }
+
+                return BitmapConversionHelpers.ToSKBitmap(renderTarget);
+            }
+            finally
+            {
+                if (overlayCanvas != null)
+                {
+                    overlayCanvas.IsVisible = overlayWasVisible;
+                }
+
+                previewFrame.InvalidateMeasure();
+                previewFrame.InvalidateArrange();
+            }
+        }
+
         public Task<Bitmap?> RenderSnapshot()
         {
-            var skBitmap = GetSnapshot();
+            using var skBitmap = GetSnapshot();
             var snapshot = skBitmap != null ? BitmapConversionHelpers.ToAvaloniBitmap(skBitmap) : null;
             return Task.FromResult<Bitmap?>(snapshot);
         }
@@ -289,7 +399,7 @@ namespace ShareX.ImageEditor.Presentation.Views
         private void OnRequestUpdateEffect(Control shape)
         {
             if (shape == null || shape.Tag is not BaseEffectAnnotation) return;
-            if (DataContext is not MainViewModel vm || vm.PreviewImage == null) return;
+            if (DataContext is not MainViewModel vm) return;
 
             SkiaSharp.SKBitmap? temporarySource = null;
 
@@ -301,10 +411,15 @@ namespace ShareX.ImageEditor.Presentation.Views
                 // an effect annotation has been created.
                 var sourceBitmap = _editorCore.SourceImage;
 
-                if (sourceBitmap == null)
+                if (sourceBitmap == null && vm.PreviewImage != null)
                 {
                     temporarySource = BitmapConversionHelpers.ToSKBitmap(vm.PreviewImage);
                     sourceBitmap = temporarySource;
+                }
+
+                if (sourceBitmap == null)
+                {
+                    return;
                 }
 
                 UpdateInteractiveEffectVisual(shape, sourceBitmap);
@@ -321,6 +436,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
         private void OnAnnotationsRestored()
         {
+            if (_workspaceDisposed) return;
             // Fully rebuild annotation layer from Core state
             // 1. Clear current UI annotations
             var canvas = this.FindControl<Canvas>("AnnotationCanvas");
@@ -354,6 +470,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
         private void OnAnnotationOrderChanged()
         {
+            if (_workspaceDisposed) return;
             var canvas = this.FindControl<Canvas>("AnnotationCanvas");
             if (canvas == null) return;
 
@@ -408,7 +525,7 @@ namespace ShareX.ImageEditor.Presentation.Views
         /// </summary>
         internal async System.Threading.Tasks.Task<string?> GetPixelColorFromRenderedCanvas(Point canvasPoint)
         {
-            if (DataContext is not MainViewModel vm || vm.PreviewImage == null) return null;
+            if (DataContext is not MainViewModel vm || !vm.HasPreviewImage) return null;
 
             try
             {

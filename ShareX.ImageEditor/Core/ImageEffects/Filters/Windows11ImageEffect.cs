@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class Windows11ImageEffect : ImageEffectBase
     public override string Id => "windows11_window";
     public override string Name => "Windows 11";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.monitor;
+    public override string IconKey => AppIcons.Monitor;
     public override string Description => "Wraps the image in a Windows 11-style window frame with a title bar and window controls.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -167,15 +167,16 @@ public sealed class Windows11ImageEffect : ImageEffectBase
         // Subtle top highlight (mica-like)
         if (!DarkMode)
         {
+            using var ownedShader1 = SKShader.CreateLinearGradient(
+                    new SKPoint(windowX, windowY),
+                    new SKPoint(windowX, windowY + 2),
+                    [new SKColor(255, 255, 255, 80), new SKColor(255, 255, 255, 0)],
+                    SKShaderTileMode.Clamp);
             using SKPaint micaPaint = new()
             {
                 IsAntialias = true,
                 Style = SKPaintStyle.Fill,
-                Shader = SKShader.CreateLinearGradient(
-                    new SKPoint(windowX, windowY),
-                    new SKPoint(windowX, windowY + 2),
-                    [new SKColor(255, 255, 255, 80), new SKColor(255, 255, 255, 0)],
-                    SKShaderTileMode.Clamp)
+                Shader = ownedShader1
             };
 
             canvas.Save();

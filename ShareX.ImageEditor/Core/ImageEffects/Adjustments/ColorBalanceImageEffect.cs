@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class ColorBalanceImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "color_balance";
     public override string Name => "Color Balance";
-    public override string IconKey => LucideIcons.sliders_horizontal;
+    public override string IconKey => AppIcons.Sliders;
     public override string Description => "Adjusts color balance in shadows, midtones, and highlights.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

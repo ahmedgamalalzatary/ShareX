@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class PopArtGridImageEffect : ImageEffectBase
     public override string Id => "pop_art_grid";
     public override string Name => "Pop art grid";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.grid_2x2;
+    public override string IconKey => AppIcons.Split;
     public override string Description => "Creates an Andy Warhol-style 2\u00d72 pop art grid with color variations.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -60,7 +60,7 @@ public sealed class PopArtGridImageEffect : ImageEffectBase
         float s = Math.Clamp(Strength / 100f, 0f, 1f);
 
         // Create high-contrast grayscale version
-        SKBitmap gray = new(w, h, source.ColorType, source.AlphaType);
+        using SKBitmap gray = new(w, h, source.ColorType, source.AlphaType);
         using (SKCanvas gc = new(gray))
         {
             float[] grayMatrix =
@@ -104,7 +104,6 @@ public sealed class PopArtGridImageEffect : ImageEffectBase
             canvas.Restore();
         }
 
-        gray.Dispose();
         return result;
     }
 }

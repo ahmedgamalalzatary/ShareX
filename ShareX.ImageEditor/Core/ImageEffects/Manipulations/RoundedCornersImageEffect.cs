@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Manipulations;
@@ -34,7 +34,7 @@ public sealed class RoundedCornersImageEffect : ImageEffectBase
     public override string Id => "rounded_corners";
     public override string Name => "Rounded Corners";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.square_round_corner;
+    public override string IconKey => ImageEffectIcons.RoundedCorner;
     public override string Description => "Rounds the corners of the image.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

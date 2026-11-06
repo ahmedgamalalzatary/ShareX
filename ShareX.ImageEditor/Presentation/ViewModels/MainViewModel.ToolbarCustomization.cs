@@ -25,7 +25,8 @@
 
 using Avalonia.Input;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.ImageEditor.Presentation.Controls;
+using ShareX.ImageEditor.Core.Annotations;
+using ShareX.ImageEditor.Presentation.Theming;
 using System.Collections.ObjectModel;
 
 namespace ShareX.ImageEditor.Presentation.ViewModels
@@ -34,6 +35,10 @@ namespace ShareX.ImageEditor.Presentation.ViewModels
     {
         private readonly ObservableCollection<ToolbarCustomizationItemViewModel> _toolbarItems = new();
         private readonly ObservableCollection<ToolbarCustomizationItemViewModel> _visibleToolbarItems = new();
+        private bool _hostToolbarToolsActive = true;
+
+        // One editor in ten shows sunglasses for the emoji tool.
+        private readonly string _emojiToolIcon = Random.Shared.Next(10) == 0 ? EditorIcons.ToolEmojiSunglasses : EditorIcons.ToolEmoji;
 
         public ReadOnlyObservableCollection<ToolbarCustomizationItemViewModel> ToolbarItems { get; private set; } = null!;
         public ReadOnlyObservableCollection<ToolbarCustomizationItemViewModel> VisibleToolbarItems { get; private set; } = null!;
@@ -73,7 +78,7 @@ namespace ShareX.ImageEditor.Presentation.ViewModels
         {
             foreach (ToolbarCustomizationItemViewModel item in _toolbarItems)
             {
-                if (item.IsHotkeyEditable && ToolbarHotkeyHelper.Matches(item.Hotkey, key, modifiers))
+                if (item.IsVisible && item.IsHotkeyEditable && ToolbarHotkeyHelper.Matches(item.Hotkey, key, modifiers))
                 {
                     ExecuteToolbarItem(item);
                     return true;
@@ -81,6 +86,26 @@ namespace ShareX.ImageEditor.Presentation.ViewModels
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Applies a host-specific toolbar layout without changing the image editor's toolbar settings.
+        /// </summary>
+        public void SetHostToolbarItems(IEnumerable<ToolbarCustomizationItemViewModel> items)
+        {
+            ApplyToolbarCustomizationItems(items, persist: false);
+        }
+
+        /// <summary>Lets an embedding host display its own mutually-exclusive tool mode.</summary>
+        public void SetHostToolbarToolsActive(bool active)
+        {
+            if (_hostToolbarToolsActive == active)
+            {
+                return;
+            }
+
+            _hostToolbarToolsActive = active;
+            RefreshToolbarItemActiveStates();
         }
 
         internal void ExecuteToolbarItem(ToolbarCustomizationItemViewModel item)
@@ -114,6 +139,11 @@ namespace ShareX.ImageEditor.Presentation.ViewModels
 
             foreach (ToolbarCustomizationItemViewModel item in items.Select(item => item.Clone()))
             {
+                if (item.Tool == EditorTool.Emoji)
+                {
+                    item.Icon = _emojiToolIcon;
+                }
+
                 _toolbarItems.Add(item);
             }
 
@@ -133,11 +163,11 @@ namespace ShareX.ImageEditor.Presentation.ViewModels
             foreach (ToolbarCustomizationItemViewModel item in _toolbarItems)
             {
                 item.IsActive = item.Tool.HasValue
-                    ? item.Tool.Value == ActiveTool
+                    ? _hostToolbarToolsActive && item.Tool.Value == ActiveTool
                     : item.Id switch
                     {
                         ToolbarCustomizationItemViewModel.BackgroundItemId => IsSettingsPanelOpen,
-                        ToolbarCustomizationItemViewModel.ImageEffectsItemId => IsEffectsPanelOpen && EffectsPanelContent is not EditorOptionsPanel,
+                        ToolbarCustomizationItemViewModel.ImageEffectsItemId => IsEffectsPanelOpen,
                         _ => false
                     };
             }

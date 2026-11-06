@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class MosaicTileBorderImageEffect : ImageEffectBase
     public override string Id => "mosaic_tile_border";
     public override string Name => "Mosaic tile border";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.grid_3x3;
+    public override string IconKey => AppIcons.Grid;
     public override string Description => "Adds a colorful mosaic tile border with individual square tiles, grout lines, and subtle per-tile variation.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

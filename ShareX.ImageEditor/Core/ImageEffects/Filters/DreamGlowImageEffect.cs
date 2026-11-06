@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class DreamGlowImageEffect : ImageEffectBase
     public override string Id => "dream_glow";
     public override string Name => "Dream glow";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.cloud;
+    public override string IconKey => AppIcons.Cloud;
     public override string Description => "Creates a dreamy soft glow by blending a blurred copy over the original.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -54,10 +54,11 @@ public sealed class DreamGlowImageEffect : ImageEffectBase
         int w = source.Width, h = source.Height;
 
         // Create blurred version
-        SKBitmap blurred = new(w, h, source.ColorType, source.AlphaType);
+        using SKBitmap blurred = new(w, h, source.ColorType, source.AlphaType);
         using (SKCanvas blurCanvas = new(blurred))
         {
-            using SKPaint blurPaint = new() { ImageFilter = SKImageFilter.CreateBlur(Radius, Radius) };
+            using var ownedImageFilter1 = SKImageFilter.CreateBlur(Radius, Radius);
+            using SKPaint blurPaint = new() { ImageFilter = ownedImageFilter1 };
             blurCanvas.DrawBitmap(source, 0, 0, blurPaint);
         }
 
@@ -70,7 +71,6 @@ public sealed class DreamGlowImageEffect : ImageEffectBase
             BlendMode = SKBlendMode.Screen
         };
         canvas.DrawBitmap(blurred, 0, 0, blendPaint);
-        blurred.Dispose();
 
         return result;
     }

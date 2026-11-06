@@ -23,17 +23,12 @@
 
 #endregion License Information (GPL v3)
 
-using System.Windows.Forms;
-
 namespace ShareX.Steam
 {
     internal static class Program
     {
         private static void Main(string[] args)
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
             Launcher.Run(args);
         }
     }

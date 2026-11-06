@@ -25,14 +25,18 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using ShareX.ImageEditor.Core.Annotations;
-using ShareX.ImageEditor.Hosting;
+using ShareX.ImageEditor.Integration;
+using ShareX.ImageEditor.Localization;
 using ShareX.ImageEditor.Presentation.Rendering;
 using ShareX.ImageEditor.Presentation.ViewModels;
 using SkiaSharp;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace ShareX.ImageEditor.Presentation.Views
 {
@@ -45,7 +49,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                 return;
             }
 
-            var pickedImage = await PickImageBitmapAsync("Select image");
+            var pickedImage = await PickImageBitmapAsync(Strings.EditorView_SelectImage);
             if (!pickedImage.HasValue)
             {
                 return;
@@ -58,7 +62,7 @@ namespace ShareX.ImageEditor.Presentation.Views
         {
             try
             {
-                var pickedImage = await PickImageBitmapAsync("Select image");
+                var pickedImage = await PickImageBitmapAsync(Strings.EditorView_SelectImage);
                 if (!pickedImage.HasValue)
                 {
                     return false;
@@ -120,8 +124,16 @@ namespace ShareX.ImageEditor.Presentation.Views
             return skBitmap == null ? null : (skBitmap, files[0].Path.LocalPath);
         }
 
+        private Action? _cancelPendingImageInsertion;
+
         private async Task InsertExternalImageAsync(SKBitmap skBitmap, string? sourceFilePath = null)
         {
+            if (_workspaceDisposed)
+            {
+                skBitmap.Dispose();
+                return;
+            }
+
             if (DataContext is not MainViewModel vm)
             {
                 InsertImageAnnotation(skBitmap);
@@ -134,11 +146,11 @@ namespace ShareX.ImageEditor.Presentation.Views
                 return;
             }
 
-            InsertImagePlacement? placement = vm.Options.ShowInsertImageDialog
+            InsertImagePlacement? placement = vm.Options.ShowInsertImageDialog && !_isWorkspaceHostMode
                 ? await ShowInsertImageDialogAsync(vm, skBitmap)
                 : InsertImagePlacement.Center;
 
-            if (!placement.HasValue)
+            if (_workspaceDisposed || !placement.HasValue)
             {
                 skBitmap.Dispose();
                 return;
@@ -149,7 +161,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
         private Task<InsertImagePlacement?> ShowInsertImageDialogAsync(MainViewModel vm, SKBitmap skBitmap)
         {
-            if (vm.IsModalOpen)
+            if (_workspaceDisposed || vm.IsModalOpen)
             {
                 return Task.FromResult<InsertImagePlacement?>(null);
             }
@@ -164,6 +176,8 @@ namespace ShareX.ImageEditor.Presentation.Views
                     return;
                 }
 
+                _cancelPendingImageInsertion = null;
+
                 if (propertyChangedHandler != null)
                 {
                     vm.PropertyChanged -= propertyChangedHandler;
@@ -174,6 +188,7 @@ namespace ShareX.ImageEditor.Presentation.Views
             {
                 if (e.PropertyName == nameof(MainViewModel.IsModalOpen) && !vm.IsModalOpen)
                 {
+                    ResetModalContentPosition();
                     Complete(null);
                 }
             };
@@ -187,14 +202,27 @@ namespace ShareX.ImageEditor.Presentation.Views
                 {
                     Complete(placement);
                     vm.CloseModalCommand.Execute(null);
+                    ResetModalContentPosition();
                 },
                 onCancel: () =>
                 {
                     Complete(null);
                     vm.CloseModalCommand.Execute(null);
+                    ResetModalContentPosition();
                 });
 
+            _cancelPendingImageInsertion = () =>
+            {
+                Complete(null);
+                if (ReferenceEquals(vm.ModalContent, dialog))
+                {
+                    vm.CloseModalCommand.Execute(null);
+                    ResetModalContentPosition();
+                }
+            };
+
             vm.ModalContent = dialog;
+            PositionModalOnCursorScreen();
             vm.IsModalOpen = true;
 
             return completionSource.Task;
@@ -210,7 +238,13 @@ namespace ShareX.ImageEditor.Presentation.Views
             switch (placement)
             {
                 case InsertImagePlacement.Center:
-                    position = null;
+                    Canvas? canvas = this.FindControl<Canvas>("AnnotationCanvas");
+                    Point? screenCenter = canvas == null ? null : GetCursorScreenCenter(canvas);
+                    position = screenCenter.HasValue
+                        ? new Point(
+                            Math.Clamp(screenCenter.Value.X, 0, _editorCore.CanvasSize.Width) - skBitmap.Width / 2.0,
+                            Math.Clamp(screenCenter.Value.Y, 0, _editorCore.CanvasSize.Height) - skBitmap.Height / 2.0)
+                        : null;
                     break;
                 case InsertImagePlacement.CanvasExpandDown:
                     int rightPadding = Math.Max(0, skBitmap.Width - canvasWidth);
@@ -234,7 +268,41 @@ namespace ShareX.ImageEditor.Presentation.Views
             InsertImageAnnotationCore(skBitmap, position);
         }
 
-        private void InsertImageAnnotationCore(SKBitmap skBitmap, Point? position = null)
+        internal void CloneRegion(Rect sourceRectangle)
+        {
+            SKBitmap? sourceImage = _editorCore.SourceImage;
+            if (sourceImage == null)
+            {
+                return;
+            }
+
+            Rect clipped = sourceRectangle.Intersect(new Rect(0, 0, sourceImage.Width, sourceImage.Height));
+            if (clipped.Width <= 0 || clipped.Height <= 0)
+            {
+                return;
+            }
+
+            int left = (int)Math.Floor(clipped.Left);
+            int top = (int)Math.Floor(clipped.Top);
+            int right = (int)Math.Ceiling(clipped.Right);
+            int bottom = (int)Math.Ceiling(clipped.Bottom);
+            using SKBitmap region = new();
+            if (sourceImage.ExtractSubset(region, new SKRectI(left, top, right, bottom)))
+            {
+                SKBitmap? bitmap = region.Copy();
+                if (bitmap != null)
+                {
+                    InsertImageAnnotationCore(bitmap, new Point(left, top), showNotification: false, toolType: EditorTool.Clone);
+                }
+            }
+        }
+
+        private void InsertImageAnnotationCore(
+            SKBitmap skBitmap,
+            Point? position = null,
+            bool showNotification = true,
+            bool selectAnnotation = true,
+            EditorTool toolType = EditorTool.Image)
         {
             var canvas = this.FindControl<Canvas>("AnnotationCanvas");
             if (canvas == null || DataContext is not MainViewModel vm)
@@ -260,7 +328,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                 posY = visibleCanvasCenter.Y - skBitmap.Height / 2.0;
             }
 
-            var annotation = new ImageAnnotation();
+            var annotation = new ImageAnnotation { ToolType = toolType };
             annotation.SetImage(skBitmap);
             annotation.StartPoint = new SKPoint((float)posX, (float)posY);
             annotation.EndPoint = new SKPoint((float)(posX + skBitmap.Width), (float)(posY + skBitmap.Height));
@@ -274,9 +342,19 @@ namespace ShareX.ImageEditor.Presentation.Views
             canvas.Children.Add(control);
             _editorCore.AddAnnotation(annotation);
             vm.HasAnnotations = true;
-            vm.ActiveTool = EditorTool.Select;
-            _selectionController.SetSelectedShape(control);
-            vm.ShowImageInsertedNotification();
+            if (selectAnnotation)
+            {
+                if (toolType != EditorTool.Clone)
+                {
+                    vm.ActiveTool = EditorTool.Select;
+                }
+                _selectionController.SetSelectedShape(control);
+            }
+
+            if (showNotification)
+            {
+                vm.ShowImageInsertedNotification();
+            }
         }
 
         private Point? GetVisibleCanvasCenter(Canvas canvas)
@@ -305,5 +383,70 @@ namespace ShareX.ImageEditor.Presentation.Views
                 Math.Clamp(visibleCanvasCenter.Value.X, 0, _editorCore.CanvasSize.Width),
                 Math.Clamp(visibleCanvasCenter.Value.Y, 0, _editorCore.CanvasSize.Height));
         }
+
+        private void PositionModalOnCursorScreen()
+        {
+            ContentControl? modalHost = this.FindControl<ContentControl>("ModalContentHost");
+            if (modalHost == null)
+            {
+                return;
+            }
+
+            modalHost.RenderTransform = null;
+            Point? targetCenter = GetCursorScreenCenter(this);
+            if (!targetCenter.HasValue)
+            {
+                return;
+            }
+
+            modalHost.RenderTransform = new TranslateTransform(
+                targetCenter.Value.X - Bounds.Width / 2,
+                targetCenter.Value.Y - Bounds.Height / 2);
+        }
+
+        private void ResetModalContentPosition()
+        {
+            _emojiPickerScreen = null;
+            ContentControl? modalHost = this.FindControl<ContentControl>("ModalContentHost");
+            if (modalHost != null)
+            {
+                modalHost.RenderTransform = null;
+                modalHost.ClearValue(MaxWidthProperty);
+                modalHost.ClearValue(MaxHeightProperty);
+            }
+        }
+
+        private Point? GetCursorScreenCenter(Visual relativeTo)
+        {
+            TopLevel? topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null || !GetCursorPos(out NativePoint cursorPosition))
+            {
+                return null;
+            }
+
+            Screens? screens = topLevel.Screens;
+            Screen? screen = screens?.ScreenFromPoint(
+                new PixelPoint(cursorPosition.X, cursorPosition.Y));
+            if (screen == null)
+            {
+                return null;
+            }
+
+            PixelPoint screenCenter = new(
+                screen.Bounds.X + screen.Bounds.Width / 2,
+                screen.Bounds.Y + screen.Bounds.Height / 2);
+            return topLevel.TranslatePoint(topLevel.PointToClient(screenCenter), relativeTo);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativePoint
+        {
+            public int X;
+            public int Y;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetCursorPos(out NativePoint point);
     }
 }

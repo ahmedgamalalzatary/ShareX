@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Manipulations;
@@ -34,7 +34,7 @@ public sealed class SkewImageEffect : ImageEffectBase
     public override string Id => "skew";
     public override string Name => "Skew";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.move_diagonal;
+    public override string IconKey => ImageEffectIcons.MoveDiagonal;
     public override string Description => "Skews the image horizontally and vertically.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

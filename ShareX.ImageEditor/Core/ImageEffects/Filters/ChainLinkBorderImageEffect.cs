@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class ChainLinkBorderImageEffect : ImageEffectBase
     public override string Id => "chain_link_border";
     public override string Name => "Chain link border";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.fence;
+    public override string IconKey => ImageEffectIcons.Fence;
     public override string Description => "Adds a metallic chain-link fence border with interlocking wire loops and highlights.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

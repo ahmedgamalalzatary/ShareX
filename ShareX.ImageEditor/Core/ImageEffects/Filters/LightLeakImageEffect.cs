@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -44,7 +44,7 @@ public sealed class LightLeakImageEffect : ImageEffectBase
     public override string Id => "light_leak";
     public override string Name => "Light leak";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.sun;
+    public override string IconKey => AppIcons.Sun;
     public override string Description => "Adds a warm film light leak effect.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -91,13 +91,14 @@ public sealed class LightLeakImageEffect : ImageEffectBase
         float radius = MathF.Sqrt(w * w + h * h) * 0.8f;
         SKColor leakColor = Color.WithAlpha((byte)(255 * alpha));
 
-        using SKPaint paint = new()
-        {
-            Shader = SKShader.CreateRadialGradient(
+        using var ownedShader1 = SKShader.CreateRadialGradient(
                 center, radius,
                 [leakColor, SKColors.Transparent],
                 [0f, 1f],
-                SKShaderTileMode.Clamp),
+                SKShaderTileMode.Clamp);
+        using SKPaint paint = new()
+        {
+            Shader = ownedShader1,
             BlendMode = SKBlendMode.Screen
         };
 

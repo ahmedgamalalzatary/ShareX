@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Manipulations;
@@ -35,7 +35,7 @@ public sealed class RippleRefractionImageEffect : ImageEffectBase
     public override string Id => "ripple_refraction";
     public override string Name => "Ripple refraction";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.waves;
+    public override string IconKey => ImageEffectIcons.Waves;
     public override string Description => "Applies a ripple refraction distortion effect.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

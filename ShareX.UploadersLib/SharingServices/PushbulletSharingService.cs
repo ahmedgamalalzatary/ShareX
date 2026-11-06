@@ -25,7 +25,6 @@
 
 using ShareX.HelpersLib;
 using ShareX.UploadersLib.FileUploaders;
-using System.Windows.Forms;
 
 namespace ShareX.UploadersLib.SharingServices
 {
@@ -45,8 +44,6 @@ namespace ShareX.UploadersLib.SharingServices
         {
             return new PushbulletSharer(config.PushbulletSettings);
         }
-
-        public override TabPage GetUploadersConfigTabPage(UploadersConfigForm form) => form.tpPushbullet;
     }
 
     public sealed class PushbulletSharer : URLSharer
@@ -58,11 +55,11 @@ namespace ShareX.UploadersLib.SharingServices
             Settings = settings;
         }
 
-        public override UploadResult ShareURL(string url)
+        protected override async Task<UploadResult> ShareURLCoreAsync(string url, CancellationToken cancellationToken)
         {
             UploadResult result = new UploadResult { URL = url, IsURLExpected = false };
 
-            new Pushbullet(Settings).PushLink(url, "ShareX: URL share");
+            await new Pushbullet(Settings).PushLinkAsync(url, "ShareX: URL share", cancellationToken).ConfigureAwait(false);
 
             return result;
         }

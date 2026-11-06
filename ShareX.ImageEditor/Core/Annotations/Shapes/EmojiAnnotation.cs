@@ -28,7 +28,7 @@ namespace ShareX.ImageEditor.Core.Annotations;
 /// <summary>
 /// Emoji sticker annotation backed by a Unicode emoji sequence.
 /// </summary>
-public sealed class EmojiAnnotation : ImageAnnotation
+public sealed partial class EmojiAnnotation : ImageAnnotation
 {
     /// <summary>
     /// Space-separated Unicode code points (hex) for the emoji sequence.

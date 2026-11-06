@@ -27,12 +27,15 @@ using ShareX.HelpersLib;
 using System;
 using System.IO;
 using System.Text;
-using System.Windows.Forms;
+using MessageBox = ShareX.AvaloniaUI.MessageBox;
+using MessageBoxButtons = ShareX.AvaloniaUI.MessageBoxButtons;
+using MessageBoxIcon = ShareX.AvaloniaUI.MessageBoxIcon;
 
 namespace ShareX.NativeMessagingHost
 {
     internal class Program
     {
+        [STAThread]
         private static void Main(string[] args)
         {
             if (args.Length > 0)

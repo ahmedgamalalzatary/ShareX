@@ -24,7 +24,6 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
-using ShareX.UploadersLib.Properties;
 using System;
 using System.ComponentModel;
 
@@ -74,7 +73,7 @@ namespace ShareX.UploadersLib
 
         public OAuthInfo()
         {
-            Description = Resources.OAuthInfo_OAuthInfo_New_account;
+            Description = Localization.Strings.OAuthInfo_New_account;
             OAuthVersion = "1.0";
         }
 

@@ -25,7 +25,7 @@
 
 using System;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using DialogResult = ShareX.AvaloniaUI.DialogResult;
 using Timer = System.Threading.Timer;
 
 namespace ShareX.HelpersLib
@@ -80,12 +80,12 @@ namespace ShareX.HelpersLib
 
         private async Task CheckUpdate()
         {
-            if (AutoUpdateEnabled && !UpdateMessageBox.IsOpen)
+            if (AutoUpdateEnabled && !UpdateMessageWindow.IsOpen)
             {
                 UpdateChecker updateChecker = CreateUpdateChecker();
                 await updateChecker.CheckUpdateAsync();
 
-                if (UpdateMessageBox.Start(updateChecker, firstUpdateCheck) == DialogResult.No)
+                if (await UpdateMessageWindow.StartAsync(updateChecker, firstUpdateCheck) == DialogResult.No)
                 {
                     AutoUpdateEnabled = false;
                 }

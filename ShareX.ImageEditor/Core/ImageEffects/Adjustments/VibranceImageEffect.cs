@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class VibranceImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "vibrance";
     public override string Name => "Vibrance";
-    public override string IconKey => LucideIcons.sparkles;
+    public override string IconKey => AppIcons.Sparkles;
     public override string Description => "Adjusts the color vibrance.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

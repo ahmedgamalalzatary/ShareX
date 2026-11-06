@@ -23,18 +23,17 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.HelpersLib.Properties;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using MessageBox = ShareX.AvaloniaUI.MessageBox;
+using MessageBoxButtons = ShareX.AvaloniaUI.MessageBoxButtons;
+using MessageBoxIcon = ShareX.AvaloniaUI.MessageBoxIcon;
 
 namespace ShareX.HelpersLib
 {
@@ -49,36 +48,6 @@ namespace ShareX.HelpersLib
             {
                 action(item);
             }
-        }
-
-        public static byte[] GetBytes(this Image img)
-        {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                img.Save(ms, img.RawFormat);
-                return ms.ToArray();
-            }
-        }
-
-        public static Stream GetStream(this Image img)
-        {
-            MemoryStream ms = new MemoryStream();
-            img.Save(ms, img.RawFormat);
-            return ms;
-        }
-
-        public static ImageCodecInfo GetCodecInfo(this ImageFormat format)
-        {
-            return ImageCodecInfo.GetImageEncoders().FirstOrDefault(info => info.FormatID.Equals(format.Guid));
-        }
-
-        public static string GetMimeType(this ImageFormat format)
-        {
-            ImageCodecInfo codec = format.GetCodecInfo();
-
-            if (codec != null) return codec.MimeType;
-
-            return "image/unknown";
         }
 
         public static bool IsValidIndex<T>(this T[] array, int index)
@@ -275,12 +244,6 @@ namespace ShareX.HelpersLib
             return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
         }
 
-        public static Icon ToIcon(this Bitmap bmp)
-        {
-            IntPtr handle = bmp.GetHicon();
-            return Icon.FromHandle(handle);
-        }
-
         public static void DisposeHandle(this Icon icon)
         {
             if (icon.Handle != IntPtr.Zero)
@@ -298,18 +261,6 @@ namespace ShareX.HelpersLib
                     prop.SetValue(self, attr.Value);
                 }
             }
-        }
-
-        public static Bitmap CreateEmptyBitmap(this Image img, int widthOffset = 0, int heightOffset = 0, PixelFormat pixelFormat = PixelFormat.Format32bppArgb)
-        {
-            Bitmap bmp = new Bitmap(img.Width + widthOffset, img.Height + heightOffset, pixelFormat);
-            bmp.SetResolution(img.HorizontalResolution, img.VerticalResolution);
-            return bmp;
-        }
-
-        public static Bitmap CreateEmptyBitmap(this Image img, PixelFormat pixelFormat)
-        {
-            return img.CreateEmptyBitmap(0, 0, pixelFormat);
         }
 
         public static string GetDescription(this Type type)
@@ -460,7 +411,7 @@ namespace ShareX.HelpersLib
         public static void ShowError(this Exception e, bool fullError = true)
         {
             string error = fullError ? e.ToString() : e.Message;
-            MessageBox.Show(error, "ShareX - " + Resources.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(error, "ShareX - " + Localization.Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         public static Task ContinueInCurrentContext(this Task task, Action action)

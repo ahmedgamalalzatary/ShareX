@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class PixelateImageEffect : ImageEffectBase
     public override string Id => "pixelate";
     public override string Name => "Pixelate";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.grid_2x2;
+    public override string IconKey => AppIcons.Split;
     public override string Description => "Pixelates the image.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -52,7 +52,7 @@ public sealed class PixelateImageEffect : ImageEffectBase
         int smallWidth = Math.Max(1, source.Width / Size);
         int smallHeight = Math.Max(1, source.Height / Size);
 
-        SKBitmap small = new SKBitmap(smallWidth, smallHeight);
+        using SKBitmap small = new SKBitmap(smallWidth, smallHeight);
         using (SKCanvas smallCanvas = new SKCanvas(small))
         {
             smallCanvas.DrawBitmap(source, new SKRect(0, 0, smallWidth, smallHeight));
@@ -65,7 +65,6 @@ public sealed class PixelateImageEffect : ImageEffectBase
             using SKImage smallImage = SKImage.FromBitmap(small);
             canvas.DrawImage(smallImage, new SKRect(0, 0, source.Width, source.Height), new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None), paint);
         }
-        small.Dispose();
         return result;
     }
 }

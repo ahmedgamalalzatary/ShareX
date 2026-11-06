@@ -24,9 +24,9 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
+using SkiaSharp;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Design;
 
 namespace ShareX.ImageEffectsLib
 {
@@ -62,7 +62,7 @@ namespace ShareX.ImageEffectsLib
             }
         }
 
-        [DefaultValue(typeof(Color), "Black"), Editor(typeof(MyColorEditor), typeof(UITypeEditor)), TypeConverter(typeof(MyColorConverter))]
+        [DefaultValue(typeof(Color), "Black")]
         public Color BorderColor { get; set; }
 
         public Pixelate()
@@ -70,9 +70,9 @@ namespace ShareX.ImageEffectsLib
             this.ApplyDefaultPropertyValues();
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
-            ImageHelpers.Pixelate(bmp, Size, BorderSize, BorderColor);
+            SkiaImageHelpers.Pixelate(bmp, Size, BorderSize, BorderColor);
             return bmp;
         }
 

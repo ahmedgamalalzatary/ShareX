@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Manipulations;
@@ -34,7 +34,7 @@ public sealed class RotateImageEffect : ImageEffectBase
     public override string Id => "rotate_custom_angle";
     public override string Name => "Rotate";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.rotate_cw;
+    public override string IconKey => ImageEffectIcons.RotateClockwise;
     public override string Description => "Rotates the image by a custom angle.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

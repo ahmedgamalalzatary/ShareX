@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -43,7 +43,7 @@ public sealed class FilmEmulationImageEffect : AdjustmentImageEffectBase
 
     public override string Id => "film_emulation";
     public override string Name => "Film emulation";
-    public override string IconKey => LucideIcons.film;
+    public override string IconKey => AppIcons.Film;
     public override string Description => "Applies cinematic analog film looks with grain and fade.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

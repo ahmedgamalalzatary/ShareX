@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Drawings;
@@ -38,7 +38,7 @@ public sealed class DrawParticlesEffect : ImageEffectBase
     public override string Id => "draw_particles";
     public override string Name => "Particles";
     public override ImageEffectCategory Category => ImageEffectCategory.Drawings;
-    public override string IconKey => LucideIcons.sparkles;
+    public override string IconKey => AppIcons.Sparkles;
     public override string Description => "Draws particle images on the source image.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -249,7 +249,8 @@ public sealed class DrawParticlesEffect : ImageEffectBase
 
         if (alpha < 255)
         {
-            paint.ColorFilter = SKColorFilter.CreateBlendMode(new SKColor(255, 255, 255, (byte)alpha), SKBlendMode.Modulate);
+            using var ownedColorFilter1 = SKColorFilter.CreateBlendMode(new SKColor(255, 255, 255, (byte)alpha), SKBlendMode.Modulate);
+            paint.ColorFilter = ownedColorFilter1;
         }
 
         using SKImage particleImage = SKImage.FromBitmap(particle);

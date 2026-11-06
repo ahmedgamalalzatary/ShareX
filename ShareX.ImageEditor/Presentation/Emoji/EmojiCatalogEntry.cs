@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -44,6 +44,12 @@ public sealed class EmojiCatalogEntry
     public string Glyph => EmojiCatalogService.ToGlyph(Unicode);
 
     [JsonIgnore]
+    public string DisplayName => Name;
+
+    [JsonIgnore]
+    public string DisplayGroup => Group;
+
+    [JsonIgnore]
     private string SearchIndex => _searchIndex ??= BuildSearchIndex();
 
     private string? _searchIndex;
@@ -56,7 +62,7 @@ public sealed class EmojiCatalogEntry
         }
 
         string search = searchText.Trim().ToLowerInvariant();
-        string normalizedName = Name.ToLowerInvariant();
+        string normalizedName = DisplayName.ToLowerInvariant();
 
         if (normalizedName.Equals(search, StringComparison.Ordinal))
         {
@@ -83,7 +89,11 @@ public sealed class EmojiCatalogEntry
 
     private string BuildSearchIndex()
     {
-        var builder = new StringBuilder(Name.Length + Group.Length + 32);
+        var builder = new StringBuilder(Name.Length + Group.Length + DisplayName.Length + DisplayGroup.Length + 32);
+        builder.Append(DisplayName);
+        builder.Append(' ');
+        builder.Append(DisplayGroup);
+        builder.Append(' ');
         builder.Append(Name);
         builder.Append(' ');
         builder.Append(Group);
@@ -96,6 +106,11 @@ public sealed class EmojiCatalogEntry
 
         return builder.ToString().ToLowerInvariant();
     }
+}
+
+public sealed record EmojiCatalogGroupOption(string Name, string DisplayName)
+{
+    public override string ToString() => DisplayName;
 }
 
 public sealed record EmojiSelectionRequest(string UnicodeSequence, string DisplayName);

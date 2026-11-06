@@ -23,10 +23,10 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.AvaloniaUI.Integration;
 using System;
 using System.Threading.Tasks;
 using System.Web;
-using System.Windows.Forms;
 
 namespace ShareX.HelpersLib
 {
@@ -68,7 +68,7 @@ namespace ShareX.HelpersLib
         {
             if (CurrentVersion == null)
             {
-                CurrentVersion = Version.Parse(Application.ProductVersion);
+                CurrentVersion = Version.Parse(Helpers.GetApplicationVersion(true));
             }
 
             if (Status != UpdateStatus.UpdateCheckFailed && CurrentVersion != null && LatestVersion != null && !string.IsNullOrEmpty(DownloadURL) &&
@@ -84,7 +84,7 @@ namespace ShareX.HelpersLib
 
         public abstract Task CheckUpdateAsync();
 
-        public void DownloadUpdate()
+        public async Task DownloadUpdateAsync()
         {
             DebugHelper.WriteLine("Updating ShareX from version {0} to {1}", CurrentVersion, LatestVersion);
 
@@ -94,14 +94,11 @@ namespace ShareX.HelpersLib
             }
             else
             {
-                using (DownloaderForm updaterForm = new DownloaderForm(this))
-                {
-                    updaterForm.ShowDialog();
+                DownloaderWindowResult result = await DownloaderWindow.ShowAsync(this);
 
-                    if (updaterForm.Status == DownloaderFormStatus.InstallStarted)
-                    {
-                        Application.Exit();
-                    }
+                if (result.Status == DownloaderWindowStatus.InstallStarted)
+                {
+                    AvaloniaBootstrapper.Shutdown();
                 }
             }
         }

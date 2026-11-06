@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -41,7 +41,7 @@ public sealed class DatamoshSmearImageEffect : ImageEffectBase
     public override string Id => "datamosh_smear";
     public override string Name => "Datamosh smear";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.cpu;
+    public override string IconKey => ImageEffectIcons.Cpu;
     public override string Description => "Simulates digital datamoshing with smeared pixel blocks and channel splitting.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>

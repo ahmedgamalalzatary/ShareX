@@ -24,19 +24,18 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
+using ShareX.AvaloniaUI.Windows;
 using ShareX.HelpersLib;
-using ShareX.ImageEditor.Hosting;
+using ShareX.ImageEditor.Integration;
 using ShareX.ImageEffectsLib;
-using ShareX.IndexerLib;
-using ShareX.MediaLib;
 using ShareX.ScreenCaptureLib;
+using ShareX.Tools;
 using ShareX.UploadersLib;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Design;
 using System.Drawing;
-using System.Drawing.Design;
 using System.Linq;
 
 namespace ShareX
@@ -90,7 +89,7 @@ namespace ShareX
             {
                 if (UseDefaultImageSettings)
                 {
-                    return Program.DefaultTaskSettings.ImageSettings;
+                    return ApplicationState.DefaultTaskSettings.ImageSettings;
                 }
 
                 return TaskSettingsReference.ImageSettings;
@@ -107,7 +106,7 @@ namespace ShareX
             {
                 if (UseDefaultCaptureSettings)
                 {
-                    return Program.DefaultTaskSettings.CaptureSettings;
+                    return ApplicationState.DefaultTaskSettings.CaptureSettings;
                 }
 
                 return TaskSettingsReference.CaptureSettings;
@@ -130,7 +129,7 @@ namespace ShareX
             {
                 if (UseDefaultToolsSettings)
                 {
-                    return Program.DefaultTaskSettings.ToolsSettings;
+                    return ApplicationState.DefaultTaskSettings.ToolsSettings;
                 }
 
                 return TaskSettingsReference.ToolsSettings;
@@ -162,7 +161,7 @@ namespace ShareX
         {
             TaskSettings taskSettings = new TaskSettings();
             taskSettings.SetDefaultSettings();
-            taskSettings.TaskSettingsReference = Program.DefaultTaskSettings;
+            taskSettings.TaskSettingsReference = ApplicationState.DefaultTaskSettings;
             return taskSettings;
         }
 
@@ -170,9 +169,9 @@ namespace ShareX
         {
             TaskSettings safeTaskSettings;
 
-            if (taskSettings.IsUsingDefaultSettings && Program.DefaultTaskSettings != null)
+            if (taskSettings.IsUsingDefaultSettings && ApplicationState.DefaultTaskSettings != null)
             {
-                safeTaskSettings = Program.DefaultTaskSettings.Copy();
+                safeTaskSettings = ApplicationState.DefaultTaskSettings.Copy();
                 safeTaskSettings.Description = taskSettings.Description;
                 safeTaskSettings.Job = taskSettings.Job;
             }
@@ -188,9 +187,9 @@ namespace ShareX
 
         public void SetDefaultSettings()
         {
-            if (Program.DefaultTaskSettings != null)
+            if (ApplicationState.DefaultTaskSettings != null)
             {
-                TaskSettings defaultTaskSettings = Program.DefaultTaskSettings.Copy();
+                TaskSettings defaultTaskSettings = ApplicationState.DefaultTaskSettings.Copy();
 
                 if (UseDefaultAfterCaptureJob)
                 {
@@ -313,11 +312,13 @@ namespace ShareX
         public bool ShowToastNotificationAfterTaskCompleted = true;
         public float ToastWindowDuration = 3f;
         public float ToastWindowFadeDuration = 1f;
-        public ContentAlignment ToastWindowPlacement = ContentAlignment.BottomRight;
+        public ImageContentAlignment ToastWindowPlacement = ImageContentAlignment.BottomRight;
         public Size ToastWindowSize = new Size(400, 300);
         public ToastClickAction ToastWindowLeftClickAction = ToastClickAction.OpenUrl;
         public ToastClickAction ToastWindowRightClickAction = ToastClickAction.CloseNotification;
         public ToastClickAction ToastWindowMiddleClickAction = ToastClickAction.AnnotateImage;
+        public int ToastWindowButtonSize = 40;
+        public List<NotificationActionButton> ToastWindowButtons = NotificationActionButton.CreateDefaultButtons();
         public bool ToastWindowAutoHide = true;
         public bool DisableNotificationsOnFullscreen = false;
         public bool UseCustomCaptureSound = false;
@@ -338,8 +339,15 @@ namespace ShareX
 
         public EImageFormat ImageFormat = EImageFormat.PNG;
         public PNGBitDepth ImagePNGBitDepth = PNGBitDepth.Default;
+        public BMPBitDepth ImageBMPBitDepth = BMPBitDepth.Bit24;
+        public int ImagePNGCompressionLevel = 1;
+        public SKPngEncoderFilterFlags ImagePNGFilter = SKPngEncoderFilterFlags.AllFilters;
         public int ImageJPEGQuality = 90;
-        public GIFQuality ImageGIFQuality = GIFQuality.Default;
+        public SKJpegEncoderDownsample ImageJPEGSubsampling = SKJpegEncoderDownsample.Downsample420;
+        public GIFQuality ImageGIFQuality = GIFQuality.Adaptive;
+        public int ImageWebPQuality = 90;
+        public bool ImageWebPLossless = true;
+        public int ImageWebPCompressionEffort = 100;
         public bool ImageAutoUseJPEG = true;
         public int ImageAutoUseJPEGSize = 2048;
         public bool ImageAutoJPEGQuality = false;
@@ -380,6 +388,7 @@ namespace ShareX
         public bool CaptureClientArea = false;
         public bool CaptureAutoHideTaskbar = false;
         public bool CaptureAutoHideDesktopIcons = false;
+        public bool HDRScreenshotColorCorrection = false;
         public Rectangle CaptureCustomRegion = new Rectangle(0, 0, 0, 0);
         public string CaptureCustomWindow = "";
 
@@ -387,23 +396,43 @@ namespace ShareX
 
         #region Capture / Region capture
 
-        public RegionCaptureOptions SurfaceOptions = new RegionCaptureOptions();
+        public RegionCaptureOptions RegionCaptureOptions = new RegionCaptureOptions();
 
         #endregion Capture / Region capture
 
         #region Capture / Screen recorder
 
         public FFmpegOptions FFmpegOptions = new FFmpegOptions();
+        public bool ScreenRecordUseNative = true;
+        public bool ScreenRecordShowBar = true;
+        public bool ScreenRecordSystemAudio = true;
+        public string ScreenRecordSystemAudioDeviceId = "";
+        public float ScreenRecordSystemAudioGain = 1f;
+        public bool ScreenRecordMicrophone = false;
+        public string ScreenRecordMicrophoneDeviceId = "";
+        public float ScreenRecordMicrophoneGain = 1f;
+        public bool ScreenRecordCamera = false;
+        public string ScreenRecordCameraDeviceId = "";
+        public ShareX.ScreenRecordingLib.CameraCaptureResolution ScreenRecordCameraResolution = ShareX.ScreenRecordingLib.CameraCaptureResolution.Size1280x720;
+        public int ScreenRecordCameraFPS = 30;
+        public ShareX.ScreenRecordingLib.CameraOverlayPosition ScreenRecordCameraPosition = ShareX.ScreenRecordingLib.CameraOverlayPosition.BottomRight;
+        public ShareX.ScreenRecordingLib.CameraOverlayShape ScreenRecordCameraShape = ShareX.ScreenRecordingLib.CameraOverlayShape.Rectangle;
+        public int ScreenRecordCameraWidthPercent = 20;
+        public int ScreenRecordCameraMargin = 20;
+        public bool ScreenRecordRequireHardwareEncoder = true;
+        public int ScreenRecordVideoBitrate = 10000; // kbps
         public int ScreenRecordFPS = 30;
         public int GIFFPS = 15;
         public bool ScreenRecordShowCursor = true;
-        public bool ScreenRecordAutoStart = true;
-        public float ScreenRecordStartDelay = 0f;
+        public bool ScreenRecordMouseHighlighter = false;
+        public bool ScreenRecordShowTimer = true;
+        public bool ScreenRecordShowButtonLabels = false;
+        public bool ScreenRecordStartDelayEnabled = false;
+        public float ScreenRecordStartDelay = 3f;
         public bool ScreenRecordFixedDuration = false;
         public float ScreenRecordDuration = 3f;
         public bool ScreenRecordTwoPassEncoding = false;
         public bool ScreenRecordAskConfirmationOnAbort = false;
-        public bool ScreenRecordTransparentRegion = false;
 
         #endregion Capture / Screen recorder
 
@@ -454,12 +483,11 @@ namespace ShareX
 
     public class TaskSettingsTools
     {
-        public string ScreenColorPickerFormat = "$hex";
-        public string ScreenColorPickerFormatCtrl = "$r255, $g255, $b255";
-        public string ScreenColorPickerInfoText = "RGB: $r255, $g255, $b255$nHex: $hex$nX: $x Y: $y";
+        public ColorPickerOptions ColorPickerOptions = new ColorPickerOptions();
+        public ScreenColorPickerOptions ScreenColorPickerOptions = new ScreenColorPickerOptions();
         public PinToScreenOptions PinToScreenOptions = new PinToScreenOptions();
+        public MouseHighlighterOptions MouseHighlighterOptions = new MouseHighlighterOptions();
         public IndexerSettings IndexerSettings = new IndexerSettings();
-        public ImageBeautifierOptions ImageBeautifierOptions = new ImageBeautifierOptions();
         public ImageCombinerOptions ImageCombinerOptions = new ImageCombinerOptions();
         public VideoConverterOptions VideoConverterOptions = new VideoConverterOptions();
         public VideoThumbnailOptions VideoThumbnailOptions = new VideoThumbnailOptions();
@@ -467,8 +495,6 @@ namespace ShareX
         public AIOptions AIOptions = new AIOptions();
         public ImageEditorOptions ImageEditorOptions = new ImageEditorOptions();
         public BackgroundRemoverOptions BackgroundRemoverOptions = new BackgroundRemoverOptions();
-        public bool UseLegacyImageEditor = false;
-        public bool ShowImageEditorSelector = true;
     }
 
     public class TaskSettingsAdvanced
@@ -494,12 +520,10 @@ namespace ShareX
         [Category("Capture"), DefaultValue(false), Description("Disable annotation support in region capture.")]
         public bool RegionCaptureDisableAnnotation { get; set; }
 
-        [Category("Upload"), Description("Files with these file extensions will be uploaded using image uploader."),
-        Editor("System.Windows.Forms.Design.StringCollectionEditor,System.Design, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", typeof(UITypeEditor))]
+        [Category("Upload"), Description("Files with these file extensions will be uploaded using image uploader.")]
         public List<string> ImageExtensions { get; set; }
 
-        [Category("Upload"), Description("Files with these file extensions will be uploaded using text uploader."),
-        Editor("System.Windows.Forms.Design.StringCollectionEditor,System.Design, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", typeof(UITypeEditor))]
+        [Category("Upload"), Description("Files with these file extensions will be uploaded using text uploader.")]
         public List<string> TextExtensions { get; set; }
 
         [Category("Upload"), DefaultValue(false), Description("Copy URL before start upload. Only works for FTP, FTPS, SFTP, Amazon S3, Google Cloud Storage and Azure Storage.")]
@@ -511,8 +535,7 @@ namespace ShareX
         [Category("Upload text"), DefaultValue("text"), Description("Text format e.g. csharp, cpp, etc.")]
         public string TextFormat { get; set; }
 
-        [Category("Upload text"), DefaultValue(""), Description("Custom text input. Use %input for text input. Example you can create web page with your text in it."),
-        Editor(typeof(MultilineStringEditor), typeof(UITypeEditor))]
+        [Category("Upload text"), DefaultValue(""), Description("Custom text input. Use %input for text input. Example you can create web page with your text in it.")]
         public string TextCustom { get; set; }
 
         [Category("Upload text"), DefaultValue(true), Description("HTML encode custom text input.")]

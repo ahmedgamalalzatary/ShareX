@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Drawings;
@@ -34,7 +34,7 @@ public sealed class GradientOverlayImageEffect : ImageEffectBase
     public override string Id => "gradient_overlay";
     public override string Name => "Gradient overlay";
     public override ImageEffectCategory Category => ImageEffectCategory.Drawings;
-    public override string IconKey => LucideIcons.paintbrush;
+    public override string IconKey => ImageEffectIcons.PaintBrush;
     public override string Description => "Blends a two-color gradient overlay on the image.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -65,14 +65,15 @@ public sealed class GradientOverlayImageEffect : ImageEffectBase
 
         SKBitmap result = source.Copy();
         using SKCanvas canvas = new(result);
-        using SKPaint paint = new()
-        {
-            Shader = SKShader.CreateLinearGradient(
+        using var ownedShader1 = SKShader.CreateLinearGradient(
                 start, end,
                 [Color1.WithAlpha((byte)(Color1.Alpha * alpha)),
                  Color2.WithAlpha((byte)(Color2.Alpha * alpha))],
                 [0f, 1f],
-                SKShaderTileMode.Clamp),
+                SKShaderTileMode.Clamp);
+        using SKPaint paint = new()
+        {
+            Shader = ownedShader1,
             BlendMode = SKBlendMode.Overlay
         };
 

@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class BevelImageEffect : ImageEffectBase
     public override string Id => "bevel";
     public override string Name => "Bevel";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.layers_2;
+    public override string IconKey => AppIcons.Layers;
     public override string Description => "Adds a beveled edge effect with highlights and shadows.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>

@@ -5,6 +5,7 @@
              xmlns:vm="using:ShareX.ImageEditor.Presentation.ViewModels"
              xmlns:emoji="using:ShareX.ImageEditor.Presentation.Emoji"
              xmlns:controls="using:ShareX.ImageEditor.Presentation.Controls"
+             xmlns:res="using:ShareX.ImageEditor.Localization"
              mc:Ignorable="d" d:DesignWidth="760" d:DesignHeight="640"
              x:Class="ShareX.ImageEditor.Presentation.Views.EmojiPickerDialogView"
              x:Name="Root"
@@ -28,6 +29,8 @@
             CornerRadius="4"
             Width="760"
             Height="640"
+            MaxWidth="{Binding #Root.MaxWidth}"
+            MaxHeight="{Binding #Root.MaxHeight}"
             BoxShadow="0 6 18 0 #40000000">
         <Grid RowDefinitions="Auto,*">
             <Grid Grid.Row="0"
@@ -66,7 +69,7 @@
                                 <DataTemplate x:DataType="emoji:EmojiCatalogEntry">
                                     <Button Classes="effect-item emoji-tile"
                                             Click="OnEmojiSelected"
-                                            ToolTip.Tip="{Binding Name}">
+                                            ToolTip.Tip="{Binding DisplayName}">
                                         <controls:EmojiPreviewImage UnicodeSequence="{Binding Unicode}"
                                                                     PreviewSize="48"
                                                                     Width="48"
@@ -82,14 +85,14 @@
                                     Spacing="8"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center">
-                            <TextBlock Text="No emojis match this search."
+                                <TextBlock Text="{x:Static res:Strings.EmojiPickerDialogView_NoMatches}"
                                        HorizontalAlignment="Center"/>
-                            <TextBlock Text="Try a different keyword."
+                                <TextBlock Text="{x:Static res:Strings.EmojiPickerDialogView_TryDifferentKeyword}"
                                        HorizontalAlignment="Center"
                                        FontSize="11"
                                        Foreground="{DynamicResource ShareX.Brush.Text.Secondary}"/>
-                            <Button Classes="editor-button"
-                                    Content="Cancel"
+                            <Button
+                                Content="{x:Static res:Strings.EmojiPickerDialogView_Cancel}"
                                     Command="{Binding CancelCommand}"
                                     Padding="20,0"
                                     HorizontalAlignment="Center"
@@ -105,9 +108,9 @@
                     <ProgressBar Width="180"
                                  Height="4"
                                  IsIndeterminate="True"/>
-                    <TextBlock Text="Loading emojis..."
+                        <TextBlock Text="{x:Static res:Strings.EmojiPickerDialogView_LoadingEmojis}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="The picker is ready. Emoji previews are loading in the background."
+                        <TextBlock Text="{x:Static res:Strings.EmojiPickerDialogView_PreviewsLoading}"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
                                MaxWidth="330"

@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class WetPlateCollodionImageEffect : ImageEffectBase
     public override string Id => "wet_plate_collodion";
     public override string Name => "Wet plate collodion";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.film;
+    public override string IconKey => AppIcons.Film;
     public override string Description => "Simulates the wet plate collodion photographic process with stains and silvering.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>

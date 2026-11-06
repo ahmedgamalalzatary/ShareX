@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -30,19 +30,18 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Platform;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ShareX.ImageEditor.Core.Annotations;
 using ShareX.ImageEditor.Core.Editor;
-using ShareX.ImageEditor.Hosting;
+using ShareX.ImageEditor.Integration;
+using ShareX.ImageEditor.Localization;
 using ShareX.ImageEditor.Presentation.Controllers;
 using ShareX.ImageEditor.Presentation.Controls;
 using ShareX.ImageEditor.Presentation.Emoji;
 using ShareX.ImageEditor.Presentation.Rendering;
-using ShareX.ImageEditor.Presentation.Theming;
 using ShareX.ImageEditor.Presentation.ViewModels;
 using SkiaSharp;
 using System.ComponentModel;
@@ -51,6 +50,9 @@ namespace ShareX.ImageEditor.Presentation.Views
 {
     public partial class EditorView : UserControl
     {
+        public static readonly StyledProperty<bool> UseBuiltInToolbarsProperty =
+            AvaloniaProperty.Register<EditorView, bool>(nameof(UseBuiltInToolbars));
+
         private static readonly Cursor ArrowCursor = new(StandardCursorType.Arrow);
         internal const double OverlayCanvasBleed = 24;
 
@@ -68,10 +70,13 @@ namespace ShareX.ImageEditor.Presentation.Views
         private bool _isSyncingFromVM;
         private bool _isSyncingToVM;
         private bool _skipNextCoreImageChanged;
+        private bool _isWorkspaceHostMode;
+        private bool _workspaceDisposed;
         private bool _suppressNextHistoryDirtyMark;
         private bool _pendingZoomToFitOnOpen;
         private int _pendingZoomToFitRetryCount;
         private int _pendingAutoCopyImageVersion;
+        private int _renderCorePending;
         private bool _overlayCanvasLayoutUpdatePending;
         private Rect? _lastOverlayCanvasRect;
         private double _lastOverlayCanvasZoom = -1;
@@ -80,11 +85,11 @@ namespace ShareX.ImageEditor.Presentation.Views
         private ImageEditorOptions? _effectBrowserPanelOptions;
         private Cursor? _interactionCursorOverride;
         private CursorAssetLoader.CustomCursorKind? _interactionCursorAsset;
+        private ContentControl _builtInToolbarsHost = null!;
+        private EditorBuiltInToolbars? _builtInToolbars;
 
         // Window-level key handler reference (so shortcuts work regardless of focus)
         private Window? _parentWindow;
-        private readonly ThemeVariantScope? _editorThemeScope;
-        private IPlatformSettings? _platformSettings;
 
         // SIP-CLIPBOARD: Internal clipboard for shape deep-cloning
         private static Annotation? _clipboardAnnotation;
@@ -92,7 +97,7 @@ namespace ShareX.ImageEditor.Presentation.Views
         public EditorView()
         {
             InitializeComponent();
-            _editorThemeScope = this.FindControl<ThemeVariantScope>("EditorThemeScope");
+            _builtInToolbarsHost = this.FindControl<ContentControl>("BuiltInToolbarsHost")!;
 
             _editorCore = new EditorCore();
 
@@ -107,7 +112,7 @@ namespace ShareX.ImageEditor.Presentation.Views
             LayoutUpdated += OnLayoutUpdated;
 
             // SIP0018: Subscribe to Core events
-            _editorCore.InvalidateRequested += () => Avalonia.Threading.Dispatcher.UIThread.Post(RenderCore);
+            _editorCore.InvalidateRequested += RequestRenderCore;
             _editorCore.ImageChanged += () =>
             {
                 // Capture the one-shot skip synchronously so it applies to the event
@@ -117,6 +122,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
+                    if (_workspaceDisposed) return;
                     if (_canvasControl != null)
                     {
                         _canvasControl.Initialize((int)_editorCore.CanvasSize.Width, (int)_editorCore.CanvasSize.Height);
@@ -128,7 +134,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                             vm.SyncImageDimensions(_editorCore.CanvasSize.Width, _editorCore.CanvasSize.Height);
 
                             // Sync Core image back to VM if change originated from Core (Undo/Redo, Core Crop)
-                            if (!_isSyncingFromVM && !_isSyncingToVM && _editorCore.SourceImage != null)
+                            if (!_isWorkspaceHostMode && !_isSyncingFromVM && !_isSyncingToVM && _editorCore.SourceImage != null)
                             {
                                 if (skipVmSync)
                                 {
@@ -188,13 +194,56 @@ namespace ShareX.ImageEditor.Presentation.Views
             AddHandler(DragDrop.DropEvent, OnDrop);
             AddHandler(DragDrop.DragOverEvent, OnDragOver);
 
-            DataContextChanged += OnEditorDataContextChanged;
+        }
+
+        public bool UseBuiltInToolbars
+        {
+            get => GetValue(UseBuiltInToolbarsProperty);
+            set => SetValue(UseBuiltInToolbarsProperty, value);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == UseBuiltInToolbarsProperty && _builtInToolbarsHost != null)
+            {
+                UpdateBuiltInToolbars();
+            }
+        }
+
+        private void UpdateBuiltInToolbars()
+        {
+            if (UseBuiltInToolbars)
+            {
+                if (_builtInToolbars == null)
+                {
+                    _builtInToolbars = new EditorBuiltInToolbars();
+                    _builtInToolbars.ZoomChanged += OnZoomChanged;
+                    _builtInToolbars.ZoomToFitRequested += OnZoomPickerZoomToFitRequested;
+                    _builtInToolbarsHost.Content = _builtInToolbars;
+
+                    if (IsLoaded)
+                    {
+                        HookAnnotationToolbarEvents();
+                    }
+                }
+            }
+            else if (_builtInToolbars != null)
+            {
+                UnhookAnnotationToolbarEvents();
+                _builtInToolbars.ZoomChanged -= OnZoomChanged;
+                _builtInToolbars.ZoomToFitRequested -= OnZoomPickerZoomToFitRequested;
+                _builtInToolbarsHost.Content = null;
+                _builtInToolbars = null;
+            }
         }
 
         private void OnLayoutUpdated(object? sender, EventArgs e)
         {
             UpdateDpiScaleFromTopLevel();
             RequestOverlayCanvasLayoutUpdate();
+            UpdateEmojiPickerPosition();
         }
 
         /// <summary>
@@ -444,19 +493,25 @@ namespace ShareX.ImageEditor.Presentation.Views
         {
             base.OnLoaded(e);
 
-            ThemeManager.ThemeChanged += OnThemeChanged;
+            if (_workspaceDisposed) return;
 
             // Check clipboard initially
             _ = CheckClipboardStatus();
 
             // Attach key handlers to the parent Window so shortcuts work
             // regardless of which child control has focus (buttons, dropdowns, etc.).
+            DetachParentWindow();
             _parentWindow = TopLevel.GetTopLevel(this) as Window;
             if (_parentWindow != null)
             {
                 _parentWindow.KeyDown += OnKeyDown;
                 _parentWindow.KeyUp += OnKeyUp;
                 _parentWindow.Activated += OnWindowActivated;
+                _parentWindow.PositionChanged += OnEditorWindowPositionChanged;
+                if (_parentWindow.Screens is { } screens)
+                {
+                    screens.Changed += OnEditorScreensChanged;
+                }
             }
 
             // Give the editor initial focus
@@ -464,48 +519,13 @@ namespace ShareX.ImageEditor.Presentation.Views
 
             if (DataContext is MainViewModel vm)
             {
-                vm.AttachEditorCore(_editorCore);
+                AttachViewModel(vm);
                 _editorCore.ActiveTool = vm.ActiveTool;
                 HookAnnotationToolbarEvents();
-
-                vm.DeleteRequested += (s, args) => PerformDelete();
-                vm.UndoRequested += (s, args) => PerformUndo();
-                vm.RedoRequested += (s, args) => PerformRedo();
-                vm.ClearAnnotationsRequested += (s, args) => ClearAllAnnotations();
-
-                // Subscribe to new context menu events
-                vm.CutAnnotationRequested += OnCutRequested;
-                vm.CopyAnnotationRequested += OnCopyRequested;
-                vm.PasteRequested += OnPasteRequested;
-                vm.DuplicateRequested += OnDuplicateRequested;
-                vm.ZoomToFitRequested += OnZoomToFitRequested;
-                vm.FlattenRequested += OnFlattenRequested;
-                vm.ImageInsertionRequested += OnImageInsertionRequested;
-                vm.EmojiInsertionRequested += OnEmojiInsertionRequested;
-
-                // File menu event handlers (Image Editor Mode)
-                vm.NewImageRequested += OnNewImageRequested;
-                vm.OpenImageRequested += OnOpenImageRequested;
-                vm.StartScreenRequested += OnStartScreenRequested;
-                vm.LoadFromClipboardRequested += OnLoadFromClipboardRequested;
-                vm.LoadFromUrlRequested += OnLoadFromUrlRequested;
-                vm.LoadRecentFileRequested += OnLoadRecentFileRequested;
-                vm.CopyRequested += OnCopyImageRequested;
-                vm.SaveRequested += OnSaveRequested;
-                vm.SaveAsRequested += OnSaveAsRequested;
-                vm.OpenOptionsPanelRequested += OnOpenOptionsPanelRequested;
-                vm.FileMenuRequested += OnFileMenuRequested;
-
-                // Original code subscribed to vm.PropertyChanged
-                vm.PropertyChanged += OnViewModelPropertyChanged;
 
                 // Initialize zoom
                 _zoomController.InitLastZoom(vm.Zoom);
                 UpdateCursorForTool();
-
-                // Wire up View interactions
-                vm.DeselectRequested += OnDeselectRequested;
-                vm.CanvasFocusRequested += OnCanvasFocusRequested;
 
                 // Initial load
                 if (vm.PreviewImage != null)
@@ -528,402 +548,18 @@ namespace ShareX.ImageEditor.Presentation.Views
                 vm.IsDirty = false;
             }
 
-            RefreshPlatformColorTracking();
         }
 
         protected override void OnUnloaded(RoutedEventArgs e)
         {
             base.OnUnloaded(e);
 
-            ThemeManager.ThemeChanged -= OnThemeChanged;
-
-            if (_parentWindow != null)
-            {
-                _parentWindow.KeyDown -= OnKeyDown;
-                _parentWindow.KeyUp -= OnKeyUp;
-                _parentWindow.Activated -= OnWindowActivated;
-            }
-
-            if (DataContext is MainViewModel vm)
-            {
-                vm.PropertyChanged -= OnViewModelPropertyChanged;
-                vm.DeselectRequested -= OnDeselectRequested;
-                vm.ZoomToFitRequested -= OnZoomToFitRequested;
-                vm.NewImageRequested -= OnNewImageRequested;
-                vm.OpenImageRequested -= OnOpenImageRequested;
-                vm.StartScreenRequested -= OnStartScreenRequested;
-                vm.LoadFromClipboardRequested -= OnLoadFromClipboardRequested;
-                vm.LoadFromUrlRequested -= OnLoadFromUrlRequested;
-                vm.LoadRecentFileRequested -= OnLoadRecentFileRequested;
-                vm.CopyRequested -= OnCopyImageRequested;
-                vm.SaveRequested -= OnSaveRequested;
-                vm.SaveAsRequested -= OnSaveAsRequested;
-                vm.OpenOptionsPanelRequested -= OnOpenOptionsPanelRequested;
-                vm.FileMenuRequested -= OnFileMenuRequested;
-                vm.ImageInsertionRequested -= OnImageInsertionRequested;
-                vm.EmojiInsertionRequested -= OnEmojiInsertionRequested;
-            }
+            DetachParentWindow();
+            DetachViewModel();
 
             UnhookAnnotationToolbarEvents();
             StopEasterEggs();
-            _selectionController.RequestUpdateEffect -= OnRequestUpdateEffect;
             ClearEffectPreviewCache();
-            SetPlatformSettings(null);
-        }
-
-        private void OnEditorDataContextChanged(object? sender, EventArgs e)
-        {
-            if (!IsLoaded)
-            {
-                return;
-            }
-
-            RefreshPlatformColorTracking();
-        }
-
-        private void OnThemeChanged(object? sender, ThemeVariant theme)
-        {
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (ShouldUseSystemTheme())
-                {
-                    UpdateTheme();
-                }
-
-                else
-                {
-                    ApplyTheme(theme);
-                }
-
-                QueueAnnotationToolbarAccentRefresh();
-            });
-        }
-
-        private void RefreshPlatformColorTracking()
-        {
-            if (!ShouldListenToPlatformColorChanges())
-            {
-                SetPlatformSettings(null);
-            }
-            else
-            {
-                SetPlatformSettings(this.GetPlatformSettings() ?? Application.Current?.PlatformSettings);
-            }
-
-            PlatformColorValues? colorValues = _platformSettings?.GetColorValues()
-                ?? this.GetPlatformSettings()?.GetColorValues()
-                ?? Application.Current?.PlatformSettings?.GetColorValues();
-
-            UpdateTheme(colorValues);
-            UpdateAccentColor(colorValues);
-            QueueAnnotationToolbarAccentRefresh();
-        }
-
-        private void QueueAnnotationToolbarAccentRefresh()
-        {
-            Dispatcher.UIThread.Post(() =>
-            {
-                this.FindControl<AnnotationToolbar>("AnnotationToolbarControl")?.RefreshAccentBrushes();
-            }, DispatcherPriority.Render);
-        }
-
-        private bool ShouldUseSystemTheme()
-        {
-            return DataContext is MainViewModel { Options.UseSystemTheme: true };
-        }
-
-        private bool ShouldUseSystemAccentColor()
-        {
-            return DataContext is MainViewModel { Options.UseSystemAccentColor: true };
-        }
-
-        private bool ShouldListenToPlatformColorChanges()
-        {
-            return ShouldUseSystemTheme() || ShouldUseSystemAccentColor();
-        }
-
-        private void SetPlatformSettings(IPlatformSettings? platformSettings)
-        {
-            if (ReferenceEquals(_platformSettings, platformSettings))
-            {
-                return;
-            }
-
-            if (_platformSettings != null)
-            {
-                _platformSettings.ColorValuesChanged -= OnPlatformColorValuesChanged;
-            }
-
-            _platformSettings = platformSettings;
-
-            if (_platformSettings != null)
-            {
-                _platformSettings.ColorValuesChanged += OnPlatformColorValuesChanged;
-            }
-        }
-
-        private void OnPlatformColorValuesChanged(object? sender, PlatformColorValues colorValues)
-        {
-            Dispatcher.UIThread.Post(() =>
-            {
-                UpdateTheme(colorValues);
-                UpdateAccentColor(colorValues);
-            });
-        }
-
-        private void UpdateTheme(PlatformColorValues? colorValues = null)
-        {
-            if (ShouldUseSystemTheme())
-            {
-                ApplyTheme(MapSystemTheme(colorValues));
-                return;
-            }
-
-            ApplyTheme(MapConfiguredTheme());
-        }
-
-        private void ApplyTheme(ThemeVariant theme)
-        {
-            if (_editorThemeScope != null)
-            {
-                _editorThemeScope.RequestedThemeVariant = theme;
-            }
-        }
-
-        private ThemeVariant MapSystemTheme(PlatformColorValues? colorValues)
-        {
-            if (colorValues != null)
-            {
-                return IsLightTheme(colorValues.ThemeVariant.ToString())
-                    ? ThemeManager.ShareXLight
-                    : ThemeManager.ShareXDark;
-            }
-
-            ThemeVariant hostTheme = TopLevel.GetTopLevel(this)?.ActualThemeVariant
-                ?? Application.Current?.ActualThemeVariant
-                ?? ThemeVariant.Default;
-
-            return IsLightTheme(hostTheme.ToString())
-                ? ThemeManager.ShareXLight
-                : ThemeManager.ShareXDark;
-        }
-
-        private ThemeVariant MapConfiguredTheme()
-        {
-            if (DataContext is MainViewModel { Options.Theme: var configuredTheme })
-            {
-                if (IsLightTheme(configuredTheme))
-                {
-                    return ThemeManager.ShareXLight;
-                }
-
-                if (!string.IsNullOrWhiteSpace(configuredTheme) &&
-                    configuredTheme.Contains("Dark", StringComparison.OrdinalIgnoreCase))
-                {
-                    return ThemeManager.ShareXDark;
-                }
-            }
-
-            return ThemeManager.GetCurrentTheme();
-        }
-
-        private static bool IsLightTheme(string? themeName)
-        {
-            return !string.IsNullOrWhiteSpace(themeName) &&
-                themeName.Contains("Light", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private void UpdateAccentColor(PlatformColorValues? colorValues = null)
-        {
-            if (ShouldUseSystemAccentColor())
-            {
-                colorValues ??= _platformSettings?.GetColorValues()
-                    ?? this.GetPlatformSettings()?.GetColorValues()
-                    ?? Application.Current?.PlatformSettings?.GetColorValues();
-
-                if (colorValues == null || colorValues.AccentColor1.A == 0)
-                {
-                    return;
-                }
-
-                ApplyAccentColor(colorValues.AccentColor1);
-                return;
-            }
-
-            if (TryGetConfiguredAccentColor(out Color accentColor))
-            {
-                ApplyAccentColor(accentColor);
-            }
-        }
-
-        private bool TryGetConfiguredAccentColor(out Color accentColor)
-        {
-            if (DataContext is MainViewModel { Options.AccentColorHex: var accentColorHex } &&
-                Color.TryParse(accentColorHex, out accentColor) &&
-                accentColor.A != 0)
-            {
-                return true;
-            }
-
-            accentColor = default;
-            return false;
-        }
-
-        private void ApplyAccentColor(Color startColor)
-        {
-            Color endColor = DarkenColor(startColor, 0.10);
-            Color foregroundColor = GetAccentForegroundColor(startColor, endColor);
-
-            Resources["ShareX.Color.Accent.Start"] = startColor;
-            Resources["ShareX.Color.Accent.End"] = endColor;
-            Resources["ShareX.Color.Accent.Foreground"] = foregroundColor;
-
-            UpdateAccentBrush(ThemeManager.ShareXDark, startColor, endColor);
-            UpdateAccentBrush(ThemeManager.ShareXLight, startColor, endColor);
-            UpdateAccentForegroundBrush(ThemeManager.ShareXDark, foregroundColor);
-            UpdateAccentForegroundBrush(ThemeManager.ShareXLight, foregroundColor);
-        }
-
-        private void UpdateAccentBrush(Avalonia.Styling.ThemeVariant theme, Color startColor, Color endColor)
-        {
-            if (!Resources.TryGetResource("ShareX.Brush.Accent", theme, out object? accentBrushValue) ||
-                accentBrushValue is not LinearGradientBrush accentBrush)
-            {
-                return;
-            }
-
-            accentBrush.StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative);
-            accentBrush.EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative);
-
-            GradientStops gradientStops = accentBrush.GradientStops;
-
-            while (gradientStops.Count < 2)
-            {
-                gradientStops.Add(new GradientStop());
-            }
-
-            while (gradientStops.Count > 2)
-            {
-                gradientStops.RemoveAt(gradientStops.Count - 1);
-            }
-
-            gradientStops[0].Color = startColor;
-            gradientStops[0].Offset = 0;
-            gradientStops[1].Color = endColor;
-            gradientStops[1].Offset = 1;
-        }
-
-        private void UpdateAccentForegroundBrush(Avalonia.Styling.ThemeVariant theme, Color foregroundColor)
-        {
-            if (!Resources.TryGetResource("ShareX.Brush.Accent.Foreground", theme, out object? accentForegroundBrushValue) ||
-                accentForegroundBrushValue is not SolidColorBrush accentForegroundBrush)
-            {
-                return;
-            }
-
-            accentForegroundBrush.Color = foregroundColor;
-        }
-
-        private Color GetAccentForegroundColor(Color startColor, Color endColor)
-        {
-            Color lightForeground = GetThemeColor(
-                ThemeManager.ShareXDark,
-                "ShareX.Color.Text",
-                Color.Parse("#D8DADB"));
-
-            Color darkForeground = GetThemeColor(
-                ThemeManager.ShareXLight,
-                "ShareX.Color.Text",
-                Color.Parse("#4E4E4E"));
-
-            double darkSwitchRatio = GetResourceDouble(
-                "ShareX.Value.Accent.Foreground.DarkSwitchRatio",
-                1.75);
-
-            double lightContrast = Math.Min(
-                GetContrastRatio(lightForeground, startColor),
-                GetContrastRatio(lightForeground, endColor));
-
-            double darkContrast = Math.Min(
-                GetContrastRatio(darkForeground, startColor),
-                GetContrastRatio(darkForeground, endColor));
-
-            return darkContrast >= lightContrast * darkSwitchRatio
-                ? darkForeground
-                : lightForeground;
-        }
-
-        private Color GetThemeColor(Avalonia.Styling.ThemeVariant theme, string resourceKey, Color fallback)
-        {
-            if (!Resources.TryGetResource(resourceKey, theme, out object? resourceValue))
-            {
-                return fallback;
-            }
-
-            return resourceValue switch
-            {
-                Color color => color,
-                SolidColorBrush brush => brush.Color,
-                _ => fallback
-            };
-        }
-
-        private double GetResourceDouble(string resourceKey, double fallback)
-        {
-            if (!Resources.TryGetResource(resourceKey, ActualThemeVariant, out object? resourceValue))
-            {
-                return fallback;
-            }
-
-            return resourceValue switch
-            {
-                double value => value,
-                float value => value,
-                decimal value => (double)value,
-                int value => value,
-                long value => value,
-                _ => fallback
-            };
-        }
-
-        private static double GetContrastRatio(Color firstColor, Color secondColor)
-        {
-            double firstLuminance = GetRelativeLuminance(firstColor);
-            double secondLuminance = GetRelativeLuminance(secondColor);
-
-            double lighter = Math.Max(firstLuminance, secondLuminance);
-            double darker = Math.Min(firstLuminance, secondLuminance);
-
-            return (lighter + 0.05) / (darker + 0.05);
-        }
-
-        private static double GetRelativeLuminance(Color color)
-        {
-            double red = LinearizeColorChannel(color.R);
-            double green = LinearizeColorChannel(color.G);
-            double blue = LinearizeColorChannel(color.B);
-
-            return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
-        }
-
-        private static double LinearizeColorChannel(byte channel)
-        {
-            double normalized = channel / 255.0;
-
-            return normalized <= 0.03928
-                ? normalized / 12.92
-                : Math.Pow((normalized + 0.055) / 1.055, 2.4);
-        }
-
-        private static Color DarkenColor(Color color, double amount)
-        {
-            double factor = Math.Clamp(1 - amount, 0, 1);
-
-            return Color.FromArgb(
-                color.A,
-                (byte)Math.Clamp((int)Math.Round(color.R * factor), 0, byte.MaxValue),
-                (byte)Math.Clamp((int)Math.Round(color.G * factor), 0, byte.MaxValue),
-                (byte)Math.Clamp((int)Math.Round(color.B * factor), 0, byte.MaxValue));
         }
 
         private void OnWindowActivated(object? sender, EventArgs e)
@@ -993,22 +629,12 @@ namespace ShareX.ImageEditor.Presentation.Views
                 else if (e.PropertyName == nameof(MainViewModel.ActiveTool))
                 {
                     _editorCore.ActiveTool = vm.ActiveTool;
+                    _inputController.CancelClone();
+                    _inputController.CancelCrop();
 
                     if (vm.ActiveTool == EditorTool.Crop)
                     {
-                        if (vm.Options.QuickCrop)
-                        {
-                            _inputController.CancelCrop();
-                        }
-                        else
-                        {
-                            _inputController.ActivateCropToFullImage();
-                        }
                         this.Focus();
-                    }
-                    else
-                    {
-                        _inputController.CancelCrop();
                     }
                     _selectionController.ClearSelection();
                     UpdateCursorForTool(); // ISSUE-018 fix: Update cursor feedback for active tool
@@ -1019,6 +645,20 @@ namespace ShareX.ImageEditor.Presentation.Views
                     {
                         EnsureEffectBrowserPanel(vm).FocusSearchBox();
                     }
+                }
+                else if (e.PropertyName == nameof(MainViewModel.ModalContent) &&
+                    vm.ModalContent is EmojiPickerDialogViewModel)
+                {
+                    PositionEmojiPickerOnActiveMonitor();
+                }
+                else if (e.PropertyName == nameof(MainViewModel.IsModalOpen) && !vm.IsModalOpen)
+                {
+                    ResetModalContentPosition();
+                }
+                else if (e.PropertyName == nameof(MainViewModel.NotificationMessage) &&
+                    !string.IsNullOrEmpty(vm.NotificationMessage))
+                {
+                    PositionNotificationOnCursorScreen();
                 }
                 else if (e.PropertyName == nameof(MainViewModel.StepStartNumber))
                 {
@@ -1032,49 +672,12 @@ namespace ShareX.ImageEditor.Presentation.Views
                 {
                     ApplyStepTypeToAnnotations(vm.SelectedStepType);
                 }
-                else if (e.PropertyName == nameof(MainViewModel.EditorUseSystemTheme) ||
-                    e.PropertyName == nameof(MainViewModel.EditorTheme) ||
-                    e.PropertyName == nameof(MainViewModel.EditorUseSystemAccentColor) ||
-                    e.PropertyName == nameof(MainViewModel.EditorAccentColor) ||
-                    e.PropertyName == nameof(MainViewModel.EditorAccentColorHex))
-                {
-                    RefreshPlatformColorTracking();
-                }
             }
-        }
-
-        private void OnOpenOptionsPanelRequested(object? sender, EventArgs e)
-        {
-            if (DataContext is not MainViewModel vm)
-            {
-                return;
-            }
-
-            if (vm.IsEffectsPanelOpen && vm.EffectsPanelContent is EditorOptionsPanel)
-            {
-                if (vm.CloseEffectsPanelCommand.CanExecute(null))
-                {
-                    vm.CloseEffectsPanelCommand.Execute(null);
-                }
-
-                return;
-            }
-
-            if (vm.IsEffectsPanelOpen && vm.CloseEffectsPanelCommand.CanExecute(null))
-            {
-                vm.CloseEffectsPanelCommand.Execute(null);
-            }
-
-            vm.EffectsPanelContent = new EditorOptionsPanel
-            {
-                DataContext = vm
-            };
-            vm.IsEffectsPanelOpen = true;
         }
 
         private void OnFileMenuRequested(object? sender, EventArgs e)
         {
-            this.FindControl<AnnotationToolbar>("AnnotationToolbarControl")?.OpenFileMenu();
+            _builtInToolbars?.OpenFileMenu();
         }
 
         private EffectBrowserPanel EnsureEffectBrowserPanel(MainViewModel vm)
@@ -1319,6 +922,168 @@ namespace ShareX.ImageEditor.Presentation.Views
             _canvasControl = this.FindControl<SKCanvasControl>("CanvasControl");
         }
 
+        /// <summary>
+        /// Configures the editor canvas as a pixel-aligned workspace embedded in a fullscreen host.
+        /// The host supplies its own toolbars and completion controls.
+        /// </summary>
+        public void ConfigureForFullscreenWorkspace()
+        {
+            _isWorkspaceHostMode = true;
+
+            if (this.FindControl<Grid>("EditorCanvasHost") is Grid canvasHost)
+            {
+                canvasHost.Margin = new Thickness(0);
+            }
+
+            if (this.FindControl<ScrollViewer>("CanvasScrollViewer") is ScrollViewer scrollViewer)
+            {
+                scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+            }
+        }
+
+        /// <summary>
+        /// Loads an owned bitmap directly into the shared workspace without creating the
+        /// normal editor preview and backup copies. This is intended for very large,
+        /// immutable capture backgrounds.
+        /// </summary>
+        public void LoadWorkspaceImage(SKBitmap bitmap)
+        {
+            ArgumentNullException.ThrowIfNull(bitmap);
+
+            if (_canvasControl == null)
+            {
+                throw new InvalidOperationException("The editor workspace must be initialized before loading an image.");
+            }
+
+            _suppressNextHistoryDirtyMark = true;
+            _canvasControl.Initialize(bitmap.Width, bitmap.Height);
+            _editorCore.LoadImage(bitmap);
+
+            if (DataContext is MainViewModel vm)
+            {
+                vm.SyncImageDimensions(bitmap.Width, bitmap.Height);
+                vm.Zoom = 1.0;
+                vm.IsDirty = false;
+            }
+        }
+
+        /// <summary>Reads a pixel from the live raster owned by an embedded workspace.</summary>
+        public SKColor GetWorkspacePixel(int x, int y)
+        {
+            SKBitmap? sourceImage = _editorCore.SourceImage;
+            if (sourceImage == null ||
+                x < 0 || y < 0 ||
+                x >= _editorCore.CanvasSize.Width || y >= _editorCore.CanvasSize.Height)
+            {
+                return SKColors.Transparent;
+            }
+
+            return sourceImage.GetPixel(x, y);
+        }
+
+        /// <summary>Deletes the topmost annotation under a point supplied by an embedded host.</summary>
+        public bool DeleteWorkspaceAnnotationAt(Point workspacePoint)
+        {
+            Canvas? canvas = this.FindControl<Canvas>("AnnotationCanvas");
+            Point? canvasPoint = canvas == null ? null : this.TranslatePoint(workspacePoint, canvas);
+            if (canvas == null || !canvasPoint.HasValue)
+            {
+                return false;
+            }
+
+            Control? shape = _selectionController.HitTestShape(canvas, canvasPoint.Value);
+            if (shape == null)
+            {
+                return false;
+            }
+
+            _selectionController.SetSelectedShape(shape);
+            PerformDelete();
+            return true;
+        }
+
+        /// <summary>
+        /// Gives a host the same staged Escape behavior as the editor without closing its window.
+        /// </summary>
+        public bool CancelActiveInteractionOrSelection()
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                if (vm.IsModalOpen)
+                {
+                    vm.CloseModalCommand.Execute(null);
+                    return true;
+                }
+
+                if (vm.IsEffectsPanelOpen)
+                {
+                    vm.CloseEffectsPanelCommand.Execute(null);
+                    return true;
+                }
+            }
+
+            if (_inputController.CancelClone() || _inputController.CancelCrop())
+            {
+                return true;
+            }
+
+            if (_selectionController.SelectedShape != null)
+            {
+                _selectionController.ClearSelection();
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>Releases the large raster buffers owned by an embedded workspace.</summary>
+        public void DisposeWorkspace()
+        {
+            if (_workspaceDisposed)
+            {
+                return;
+            }
+
+            _workspaceDisposed = true;
+            _pendingAutoCopyImageVersion++;
+            _cancelPendingImageInsertion?.Invoke();
+            DetachParentWindow();
+            DetachViewModel();
+            UnhookAnnotationToolbarEvents();
+            DisposeEasterEggs();
+            _selectionController.RequestUpdateEffect -= OnRequestUpdateEffect;
+            ClearEffectPreviewCache();
+            this.FindControl<SpotlightOverlayControl>("SpotlightOverlayControl")?.Dispose();
+            ReleaseAnnotationDisplayBitmaps();
+            _canvasControl?.Dispose();
+            _editorCore.Dispose();
+        }
+
+        private void ReleaseAnnotationDisplayBitmaps()
+        {
+            foreach (string canvasName in new[] { "AnnotationCanvas", "OverlayCanvas" })
+            {
+                if (this.FindControl<Canvas>(canvasName) is not { } canvas) continue;
+
+                foreach (Control control in canvas.Children)
+                {
+                    if (control is Image { Tag: ImageAnnotation } image)
+                    {
+                        var source = image.Source;
+                        image.Source = null;
+                        (source as IDisposable)?.Dispose();
+                    }
+                    else if (control is global::Avalonia.Controls.Shapes.Rectangle { Tag: SmartEraserAnnotation } rectangle
+                        && rectangle.Fill is ImageBrush brush)
+                    {
+                        rectangle.Fill = null;
+                        (brush.Source as IDisposable)?.Dispose();
+                    }
+                }
+            }
+        }
+
         private void LoadImageFromViewModel(MainViewModel vm)
         {
             if (vm.PreviewImage == null || _canvasControl == null) return;
@@ -1407,7 +1172,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
         private void QueueAutoCopyImageToClipboard(MainViewModel vm)
         {
-            if (!vm.Options.AutoCopyImageToClipboard || !vm.HasPreviewImage)
+            if (_workspaceDisposed || _isWorkspaceHostMode || !vm.Options.AutoCopyImageToClipboard || !vm.HasPreviewImage)
             {
                 return;
             }
@@ -1427,7 +1192,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
         private async void AutoCopyImageToClipboard(MainViewModel vm)
         {
-            if (!vm.Options.AutoCopyImageToClipboard || !vm.HasPreviewImage)
+            if (_isWorkspaceHostMode || !vm.Options.AutoCopyImageToClipboard || !vm.HasPreviewImage)
             {
                 return;
             }
@@ -1493,6 +1258,29 @@ namespace ShareX.ImageEditor.Presentation.Views
             }
         }
 
+        private void PositionNotificationOnCursorScreen()
+        {
+            Grid? notificationHost = this.FindControl<Grid>("EditorNotificationHost");
+            if (notificationHost == null)
+            {
+                return;
+            }
+
+            notificationHost.RenderTransform = null;
+            if (!_isWorkspaceHostMode)
+            {
+                return;
+            }
+
+            Point? screenCenter = GetCursorScreenCenter(this);
+            if (screenCenter.HasValue)
+            {
+                notificationHost.RenderTransform = new TranslateTransform(
+                    screenCenter.Value.X - Bounds.Width / 2,
+                    0);
+            }
+        }
+
         private void OnNotificationPointerEntered(object? sender, PointerEventArgs e)
         {
             if (DataContext is MainViewModel vm)
@@ -1514,7 +1302,7 @@ namespace ShareX.ImageEditor.Presentation.Views
             _inputController.OnKeyDown(sender ?? this, e);
 
             // Skip shortcuts when the user is typing in a text field
-            if (_parentWindow?.FocusManager?.GetFocusedElement() is TextBox) return;
+            if (e.Source is TextBox || _parentWindow?.FocusManager?.GetFocusedElement() is TextBox) return;
 
             // Skip shortcuts when a modal dialog is open (e.g. emoji picker search box)
             if (DataContext is MainViewModel { IsModalOpen: true }) return;
@@ -1585,7 +1373,13 @@ namespace ShareX.ImageEditor.Presentation.Views
                     {
                         case Key.Z: vm.UndoCommand.Execute(null); e.Handled = true; break;
                         case Key.Y: vm.RedoCommand.Execute(null); e.Handled = true; break;
-                        case Key.H: vm.ToggleToolbarsCommand.Execute(null); e.Handled = true; break;
+                        case Key.H:
+                            if (!_isWorkspaceHostMode)
+                            {
+                                vm.ToggleToolbarsCommand.Execute(null);
+                                e.Handled = true;
+                            }
+                            break;
                         case Key.X: vm.CutAnnotationCommand.Execute(null); e.Handled = true; break;
                         case Key.C:
                             if (vm.CopyCommand.CanExecute(null))
@@ -1694,7 +1488,7 @@ namespace ShareX.ImageEditor.Presentation.Views
             }
 
             // Skip shortcuts when the user is typing in a text field
-            if (_parentWindow?.FocusManager?.GetFocusedElement() is TextBox) return;
+            if (e.Source is TextBox || _parentWindow?.FocusManager?.GetFocusedElement() is TextBox) return;
 
             if (e.Key is Key.LeftCtrl or Key.RightCtrl && !_inputController.IsDrawingActive)
             {
@@ -1706,7 +1500,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                 switch (e.Key)
                 {
                     case Key.Escape:
-                        if (_inputController.CancelCrop())
+                        if (_inputController.CancelClone() || _inputController.CancelCrop())
                         {
                             e.Handled = true;
                         }
@@ -1751,6 +1545,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
         private void OnDeselectRequested(object? sender, EventArgs e)
         {
+            _inputController.CancelClone();
             _inputController.CancelCrop();
             _selectionController.ClearSelection();
         }
@@ -1884,6 +1679,18 @@ namespace ShareX.ImageEditor.Presentation.Views
             InsertImageAnnotationCore(skBitmap, dropPosition);
         }
 
+        /// <summary>Inserts host-provided capture content without treating it as a user edit.</summary>
+        public void InsertWorkspaceImageAnnotation(SKBitmap skBitmap, Point? position = null)
+        {
+            _suppressNextHistoryDirtyMark = true;
+            InsertImageAnnotationCore(skBitmap, position, showNotification: false, selectAnnotation: false);
+
+            if (DataContext is MainViewModel vm)
+            {
+                vm.IsDirty = false;
+            }
+        }
+
         private void InsertEmojiAnnotation(string unicodeSequence, string displayName, Point? dropPosition = null)
         {
             var canvas = this.FindControl<Canvas>("AnnotationCanvas");
@@ -1894,8 +1701,15 @@ namespace ShareX.ImageEditor.Presentation.Views
 
             const int defaultSize = 160;
 
-            var posX = dropPosition?.X ?? (_editorCore.CanvasSize.Width / 2 - defaultSize / 2.0);
-            var posY = dropPosition?.Y ?? (_editorCore.CanvasSize.Height / 2 - defaultSize / 2.0);
+            Point? screenCenter = dropPosition.HasValue ? null : GetCursorScreenCenter(canvas);
+            double centerX = screenCenter.HasValue
+                ? Math.Clamp(screenCenter.Value.X, 0, _editorCore.CanvasSize.Width)
+                : _editorCore.CanvasSize.Width / 2;
+            double centerY = screenCenter.HasValue
+                ? Math.Clamp(screenCenter.Value.Y, 0, _editorCore.CanvasSize.Height)
+                : _editorCore.CanvasSize.Height / 2;
+            var posX = dropPosition?.X ?? centerX - defaultSize / 2.0;
+            var posY = dropPosition?.Y ?? centerY - defaultSize / 2.0;
 
             var annotation = new EmojiAnnotation
             {
@@ -1956,7 +1770,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                     {
                         var ext = System.IO.Path.GetExtension(file.Name)?.ToLowerInvariant();
 
-                        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif" || ext == ".webp" || ext == ".ico" || ext == ".tiff" || ext == ".tif")
+                        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif" || ext == ".webp" || ext == ".ico")
                         {
                             try
                             {
@@ -2003,7 +1817,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
             IReadOnlyList<IStorageFile> files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Select background image",
+                Title = Strings.EditorView_SelectBackgroundImage,
                 AllowMultiple = false,
                 FileTypeFilter = [FilePickerFileTypes.ImageAll]
             });
@@ -2118,7 +1932,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
             IReadOnlyList<IStorageFile> files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Open image",
+                Title = Strings.EditorView_OpenImage,
                 AllowMultiple = false,
                 FileTypeFilter = [FilePickerFileTypes.ImageAll]
             });
@@ -2246,7 +2060,7 @@ namespace ShareX.ImageEditor.Presentation.Views
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel?.Clipboard == null)
             {
-                ShowStartScreenStatus(vm, "Failed to load image from clipboard.");
+                ShowStartScreenStatus(vm, Strings.EditorView_FailedToLoadImageFromClipboard);
                 return;
             }
 
@@ -2259,7 +2073,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                 if (clipboardBitmap != null)
                 {
                     using var ms = new MemoryStream();
-                    clipboardBitmap.Save(ms);
+                    clipboardBitmap.Save(ms, PngBitmapEncoderOptions.Default);
                     (clipboardBitmap as IDisposable)?.Dispose();
                     ms.Position = 0;
 
@@ -2302,12 +2116,12 @@ namespace ShareX.ImageEditor.Presentation.Views
                     }
                 }
 
-                ShowStartScreenStatus(vm, "Failed to load image from clipboard.\nClipboard does not contain an image.");
+                ShowStartScreenStatus(vm, Strings.EditorView_ClipboardDoesNotContainImage);
             }
             catch (Exception ex)
             {
                 EditorServices.ReportError(nameof(EditorView), "Failed to load image from clipboard.", ex);
-                ShowStartScreenStatus(vm, "Failed to load image from clipboard.");
+                ShowStartScreenStatus(vm, Strings.EditorView_FailedToLoadImageFromClipboard);
             }
         }
 
@@ -2337,7 +2151,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                 if (skBitmap == null)
                 {
                     startScreenDialog?.SetUrlLoading(false);
-                    startScreenDialog?.ShowStatus("The URL does not point to a valid image.");
+                    startScreenDialog?.ShowStatus(Strings.EditorView_UrlDoesNotPointToValidImage);
                     return;
                 }
 
@@ -2347,7 +2161,7 @@ namespace ShareX.ImageEditor.Presentation.Views
             catch (Exception ex)
             {
                 startScreenDialog?.SetUrlLoading(false);
-                startScreenDialog?.ShowStatus($"Failed to download image: {ex.Message}");
+                startScreenDialog?.ShowStatus(string.Format(Strings.EditorView_FailedToDownloadImageFormat, ex.Message));
             }
         }
 
@@ -2362,7 +2176,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                 {
                     startScreenDialog.RecentFiles.Remove(filePath);
                 }
-                ShowStartScreenStatus(vm, $"The file no longer exists.\n{filePath}");
+                ShowStartScreenStatus(vm, string.Format(Strings.EditorView_FileNoLongerExistsFormat, filePath));
                 return;
             }
 
@@ -2373,7 +2187,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                 if (skBitmap == null)
                 {
                     EditorServices.ReportError(nameof(EditorView), $"Failed to decode image file '{filePath}'.");
-                    ShowStartScreenStatus(vm, $"Failed to load image file.\n{filePath}");
+                    ShowStartScreenStatus(vm, string.Format(Strings.EditorView_FailedToLoadImageFileFormat, filePath));
                     return;
                 }
 
@@ -2384,7 +2198,7 @@ namespace ShareX.ImageEditor.Presentation.Views
             catch (Exception ex)
             {
                 EditorServices.ReportError(nameof(EditorView), $"Failed to load image file '{filePath}'.", ex);
-                ShowStartScreenStatus(vm, $"Failed to load image file.\n{filePath}");
+                ShowStartScreenStatus(vm, string.Format(Strings.EditorView_FailedToLoadImageFileFormat, filePath));
             }
         }
 
@@ -2496,7 +2310,7 @@ namespace ShareX.ImageEditor.Presentation.Views
 
             IStorageFile? file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title = "Save image as",
+                Title = Strings.EditorView_SaveImageAs,
                 SuggestedFileName = !string.IsNullOrEmpty(vm.ImageFilePath)
                     ? System.IO.Path.GetFileName(vm.ImageFilePath)
                     : "image.png",
@@ -2574,6 +2388,5 @@ namespace ShareX.ImageEditor.Presentation.Views
                 menu.Open(target);
             }
         }
-
     }
 }

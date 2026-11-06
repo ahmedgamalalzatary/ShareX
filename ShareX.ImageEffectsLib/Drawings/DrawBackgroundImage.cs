@@ -24,16 +24,15 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
+using SkiaSharp;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Design;
 
 namespace ShareX.ImageEffectsLib
 {
     [Description("Background image")]
     public class DrawBackgroundImage : ImageEffect
     {
-        [DefaultValue(""), Editor(typeof(ImageFileNameEditor), typeof(UITypeEditor))]
+        [DefaultValue("")]
         public string ImageFilePath { get; set; }
 
         [DefaultValue(true)]
@@ -47,11 +46,11 @@ namespace ShareX.ImageEffectsLib
             this.ApplyDefaultPropertyValues();
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
             if (ImageEffectPathHelpers.TryGetSafeLocalFilePath(ImageFilePath, out string imageFilePath))
             {
-                return ImageHelpers.DrawBackgroundImage(bmp, imageFilePath, Center, Tile);
+                return SkiaImageHelpers.DrawBackgroundImage(bmp, imageFilePath, Center, Tile);
             }
 
             return bmp;

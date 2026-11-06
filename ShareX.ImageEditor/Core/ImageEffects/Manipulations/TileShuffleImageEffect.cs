@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Manipulations;
@@ -34,7 +34,7 @@ public sealed class TileShuffleImageEffect : ImageEffectBase
     public override string Id => "tile_shuffle";
     public override string Name => "Tile Shuffle";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.shuffle;
+    public override string IconKey => ImageEffectIcons.Shuffle;
     public override string Description => "Divides the image into a grid and randomly rearranges the tiles.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

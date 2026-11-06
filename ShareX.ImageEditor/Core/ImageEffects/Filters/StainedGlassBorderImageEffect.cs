@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class StainedGlassBorderImageEffect : ImageEffectBase
     public override string Id => "stained_glass_border";
     public override string Name => "Stained glass border";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.palette;
+    public override string IconKey => AppIcons.Palette;
     public override string Description => "Adds a stained glass border with jewel-toned glass panels divided by dark lead came lines.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -202,28 +202,30 @@ public sealed class StainedGlassBorderImageEffect : ImageEffectBase
         SKColor lightColor = LightenColor(baseColor, 0.25f).WithAlpha(245);
         SKColor darkColor = DarkenColor(baseColor, 0.15f).WithAlpha(235);
 
+        using var ownedShader1 = SKShader.CreateLinearGradient(
+                new SKPoint(x1, y1),
+                new SKPoint(x2, y2),
+                [lightColor, darkColor],
+                SKShaderTileMode.Clamp);
         using SKPaint glassPaint = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(
-                new SKPoint(x1, y1),
-                new SKPoint(x2, y2),
-                [lightColor, darkColor],
-                SKShaderTileMode.Clamp)
+            Shader = ownedShader1
         };
         canvas.DrawRect(x1, y1, w, h, glassPaint);
 
         // Specular highlight in top-left corner
+        using var ownedShader2 = SKShader.CreateRadialGradient(
+                new SKPoint(x1 + w * 0.2f, y1 + h * 0.2f),
+                Math.Min(w, h) * 0.4f,
+                [new SKColor(255, 255, 255, 90), SKColors.Transparent],
+                SKShaderTileMode.Clamp);
         using SKPaint specPaint = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateRadialGradient(
-                new SKPoint(x1 + w * 0.2f, y1 + h * 0.2f),
-                Math.Min(w, h) * 0.4f,
-                [new SKColor(255, 255, 255, 90), SKColors.Transparent],
-                SKShaderTileMode.Clamp)
+            Shader = ownedShader2
         };
         canvas.DrawRect(x1, y1, w, h, specPaint);
     }

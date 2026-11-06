@@ -25,6 +25,7 @@
 
 using Avalonia.Controls;
 using ShareX.ImageEditor.Presentation.Controls;
+using static ShareX.ImageEditor.Presentation.Rendering.AnnotationVisualHelpers;
 
 namespace ShareX.ImageEditor.Core.Annotations;
 
@@ -49,5 +50,12 @@ public partial class NumberAnnotation
         }
 
         return control;
+    }
+
+    internal void UpdateVisual(StepControl stepControl, bool ensureMinimumSize)
+    {
+        stepControl.Annotation = this;
+        ApplyBoundsControl(stepControl, GetInteractionBounds(), ensureMinimumSize);
+        stepControl.InvalidateVisual();
     }
 }

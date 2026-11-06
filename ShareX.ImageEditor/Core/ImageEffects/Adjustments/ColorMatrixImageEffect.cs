@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class ColorMatrixImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "color_matrix";
     public override string Name => "Color matrix";
-    public override string IconKey => LucideIcons.grid_3x3;
+    public override string IconKey => AppIcons.Grid;
     public override string Description => "Applies a color matrix transformation.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

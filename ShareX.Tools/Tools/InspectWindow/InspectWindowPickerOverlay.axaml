@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:icons="using:ShareX.Icons"
+        xmlns:controls="using:ShareX.AvaloniaUI.Controls"
+        x:Class="ShareX.Tools.InspectWindowPickerOverlay"
+        WindowDecorations="None"
+        ShowInTaskbar="False"
+        CanResize="False"
+        Topmost="True"
+        Background="#19000000"
+        TransparencyLevelHint="Transparent">
+        <Grid Background="#19000000">
+            <Border Classes="tool-panel"
+                    Padding="18,12"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Margin="16">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <controls:IconPresenter Icon="{x:Static icons:AppIcons.Crosshair}"
+                                            FontSize="20"
+                                            VerticalAlignment="Center"/>
+                    <TextBlock x:Name="InstructionText"
+                               FontWeight="Normal"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+</Window>

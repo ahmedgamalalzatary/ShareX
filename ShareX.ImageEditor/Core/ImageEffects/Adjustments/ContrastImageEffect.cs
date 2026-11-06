@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class ContrastImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "contrast";
     public override string Name => "Contrast";
-    public override string IconKey => LucideIcons.contrast;
+    public override string IconKey => AppIcons.Contrast;
     public override string Description => "Adjusts image contrast.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

@@ -27,7 +27,7 @@ using ShareX.ImageEditor.Core.Annotations;
 using ShareX.ImageEditor.Core.History;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Manipulations;
-using ShareX.ImageEditor.Hosting;
+using ShareX.ImageEditor.Integration;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.Editor;
@@ -397,31 +397,12 @@ public class EditorCore : IDisposable
         }
 
         SKColor topLeft = SourceImage.GetPixel(0, 0);
-        int w = SourceImage.Width;
-        int h = SourceImage.Height;
-        int minX = w, minY = h, maxX = 0, maxY = 0;
-        bool hasContent = false;
-
-        for (int y = 0; y < h; y++)
-        {
-            for (int x = 0; x < w; x++)
-            {
-                SKColor pixel = SourceImage.GetPixel(x, y);
-                if (!ImageHelpers.ColorsMatch(pixel, topLeft, tolerance))
-                {
-                    hasContent = true;
-                    if (x < minX) minX = x;
-                    if (x > maxX) maxX = x;
-                    if (y < minY) minY = y;
-                    if (y > maxY) maxY = y;
-                }
-            }
-        }
-
-        if (!hasContent) minX = minY = 0;
+        SKRectI? bounds = ImageHelpers.FindContentBounds(SourceImage, topLeft, tolerance);
+        int minX = bounds?.Left ?? 0;
+        int minY = bounds?.Top ?? 0;
 
         return ApplyImageOperation(
-            img => ImageHelpers.AutoCrop(img, topLeft, tolerance),
+            img => ImageHelpers.CropToContentBounds(img, bounds),
             clearAnnotations: false,
             transformAnnotations: () => TranslateAnnotations(-minX, -minY));
     }
@@ -430,24 +411,9 @@ public class EditorCore : IDisposable
 
     private void TransformAnnotations(Func<SKPoint, SKPoint> transformPoint)
     {
-        foreach (var ann in _annotations)
+        foreach (Annotation annotation in _annotations)
         {
-            ann.StartPoint = transformPoint(ann.StartPoint);
-            ann.EndPoint = transformPoint(ann.EndPoint);
-
-            if (ann is FreehandAnnotation freehand)
-            {
-                for (int i = 0; i < freehand.Points.Count; i++)
-                    freehand.Points[i] = transformPoint(freehand.Points[i]);
-            }
-            else if (ann is NumberAnnotation number && number.HasTailPoint)
-            {
-                number.SetTailPoint(transformPoint(number.TailPoint));
-            }
-            else if (ann is SpeechBalloonAnnotation balloon)
-            {
-                balloon.SetTailPoint(transformPoint(balloon.GetEffectiveTailPoint()));
-            }
+            annotation.TransformPoints(transformPoint);
         }
     }
 
@@ -458,14 +424,9 @@ public class EditorCore : IDisposable
 
     private void ScaleAnnotations(float scaleX, float scaleY)
     {
-        TransformAnnotations(p => new SKPoint(p.X * scaleX, p.Y * scaleY));
-        foreach (var ann in _annotations)
+        foreach (Annotation annotation in _annotations)
         {
-            ann.StrokeWidth *= Math.Min(scaleX, scaleY);
-            if (ann is TextAnnotation text)
-            {
-                text.FontSize *= scaleY;
-            }
+            annotation.Scale(scaleX, scaleY);
         }
     }
 
@@ -567,97 +528,41 @@ public class EditorCore : IDisposable
             (startPos, endPos) = (endPos, startPos);
         }
 
-        if (isVertical)
+        int imageLength = isVertical ? SourceImage.Width : SourceImage.Height;
+        if (startPos < 0 || endPos > imageLength || startPos >= endPos)
         {
-            if (startPos < 0 || endPos > SourceImage.Width || startPos >= endPos)
-            {
-                return false;
-            }
-        }
-        else
-        {
-            if (startPos < 0 || endPos > SourceImage.Height || startPos >= endPos)
-            {
-                return false;
-            }
+            return false;
         }
 
         _history.CreateCanvasMemento();
 
-        if (isVertical)
+        if (endPos - startPos >= imageLength)
         {
-            int cutX = startPos;
-            int cutWidth = endPos - startPos;
-            int newWidth = SourceImage.Width - cutWidth;
-            if (newWidth <= 0)
-            {
-                return false;
-            }
-
-            var resultBitmap = new SKBitmap(newWidth, SourceImage.Height);
-            using (var canvas = new SKCanvas(resultBitmap))
-            {
-                if (cutX > 0)
-                {
-                    var sourceRect = new SKRect(0, 0, cutX, SourceImage.Height);
-                    var destRect = new SKRect(0, 0, cutX, SourceImage.Height);
-                    canvas.DrawBitmap(SourceImage, sourceRect, destRect);
-                }
-
-                int rightStart = cutX + cutWidth;
-                if (rightStart < SourceImage.Width)
-                {
-                    var sourceRect = new SKRect(rightStart, 0, SourceImage.Width, SourceImage.Height);
-                    var destRect = new SKRect(cutX, 0, newWidth, SourceImage.Height);
-                    canvas.DrawBitmap(SourceImage, sourceRect, destRect);
-                }
-            }
-
-            SourceImage.Dispose();
-            SourceImage = resultBitmap;
-            CanvasSize = new SKSize(newWidth, SourceImage.Height);
-            AdjustAnnotationsForVerticalCut(cutX, cutWidth, newWidth);
+            return false;
         }
-        else
-        {
-            int cutY = startPos;
-            int cutHeight = endPos - startPos;
-            int newHeight = SourceImage.Height - cutHeight;
-            if (newHeight <= 0)
-            {
-                return false;
-            }
 
-            var resultBitmap = new SKBitmap(SourceImage.Width, newHeight);
-            using (var canvas = new SKCanvas(resultBitmap))
-            {
-                if (cutY > 0)
-                {
-                    var sourceRect = new SKRect(0, 0, SourceImage.Width, cutY);
-                    var destRect = new SKRect(0, 0, SourceImage.Width, cutY);
-                    canvas.DrawBitmap(SourceImage, sourceRect, destRect);
-                }
-
-                int bottomStart = cutY + cutHeight;
-                if (bottomStart < SourceImage.Height)
-                {
-                    var sourceRect = new SKRect(0, bottomStart, SourceImage.Width, SourceImage.Height);
-                    var destRect = new SKRect(0, cutY, SourceImage.Width, newHeight);
-                    canvas.DrawBitmap(SourceImage, sourceRect, destRect);
-                }
-            }
-
-            SourceImage.Dispose();
-            SourceImage = resultBitmap;
-            CanvasSize = new SKSize(SourceImage.Width, newHeight);
-            AdjustAnnotationsForHorizontalCut(cutY, cutHeight, newHeight);
-        }
+        ApplyCutOut(SourceImage, startPos, endPos, isVertical);
 
         AnnotationsRestored?.Invoke();
         ImageChanged?.Invoke();
         HistoryChanged?.Invoke();
         InvalidateRequested?.Invoke();
         return true;
+    }
+
+    private void ApplyCutOut(SKBitmap source, int startPos, int endPos, bool isVertical)
+    {
+        SourceImage = ImageHelpers.CutOut(source, startPos, endPos, isVertical);
+        source.Dispose();
+        CanvasSize = new SKSize(SourceImage.Width, SourceImage.Height);
+
+        for (int i = _annotations.Count - 1; i >= 0; i--)
+        {
+            if (!CutOutAnnotation.AdjustAnnotation(_annotations[i], startPos, endPos, isVertical, SourceImage))
+            {
+                _annotations.RemoveAt(i);
+            }
+        }
     }
 
     /// <summary>
@@ -745,14 +650,6 @@ public class EditorCore : IDisposable
 
         _startPoint = point;
 
-        string? sampledSmartEraserColor = null;
-
-        // Sample rendered color for Smart Eraser to mirror Avalonia behavior
-        if (ActiveTool == EditorTool.SmartEraser)
-        {
-            sampledSmartEraserColor = SampleCanvasColor(point);
-        }
-
         // Interact with currently selected annotation first so users can resize/move immediately after drawing
         if (_selectedAnnotation != null)
         {
@@ -802,16 +699,16 @@ public class EditorCore : IDisposable
             // Handle special tools
             if (_currentAnnotation is SmartEraserAnnotation smartEraser)
             {
-                smartEraser.StrokeWidth = 0;
-                if (!string.IsNullOrEmpty(sampledSmartEraserColor))
+                var sampledColor = SampleCanvasColor(point);
+                if (!string.IsNullOrEmpty(sampledColor))
                 {
-                    smartEraser.StrokeColor = sampledSmartEraserColor;
-                    smartEraser.FillColor = sampledSmartEraserColor;
+                    smartEraser.StrokeColor = sampledColor;
+                    smartEraser.FillColor = sampledColor;
                 }
-                else
+                smartEraser.StrokeWidth = 0;
+                if (SourceImage != null)
                 {
-                    smartEraser.StrokeColor = "#80FF0000";
-                    smartEraser.FillColor = "#80FF0000";
+                    smartEraser.ConfigureFill(SourceImage);
                 }
             }
             else if (_currentAnnotation is FreehandAnnotation freehand)
@@ -926,6 +823,10 @@ public class EditorCore : IDisposable
         {
             spotlight.CanvasSize = CanvasSize;
         }
+        else if (_currentAnnotation is SmartEraserAnnotation smartEraser && SourceImage != null)
+        {
+            smartEraser.ConfigureFill(SourceImage);
+        }
 
         UpdateAnnotationState(_currentAnnotation);
 
@@ -956,6 +857,11 @@ public class EditorCore : IDisposable
 
         // Finalize annotation
         _currentAnnotation.EndPoint = point;
+
+        if (_currentAnnotation is SmartEraserAnnotation smartEraser && SourceImage != null)
+        {
+            smartEraser.ConfigureFill(SourceImage);
+        }
 
         // Crop executes immediately like the Avalonia master behavior
         if (_currentAnnotation is CropAnnotation)
@@ -1198,17 +1104,7 @@ public class EditorCore : IDisposable
     /// </summary>
     public void BringToFront()
     {
-        if (_selectedAnnotation == null || !_annotations.Contains(_selectedAnnotation)) return;
-        int index = _annotations.IndexOf(_selectedAnnotation);
-        // Already at top
-        if (index < 0 || index == _annotations.Count - 1) return;
-
-        _history.CreateAnnotationsMemento();
-        _annotations.RemoveAt(index);
-        _annotations.Add(_selectedAnnotation);
-        AnnotationOrderChanged?.Invoke();
-        HistoryChanged?.Invoke();
-        InvalidateRequested?.Invoke();
+        MoveSelectedAnnotation(_annotations.Count - 1);
     }
 
     /// <summary>
@@ -1216,17 +1112,7 @@ public class EditorCore : IDisposable
     /// </summary>
     public void SendToBack()
     {
-        if (_selectedAnnotation == null || !_annotations.Contains(_selectedAnnotation)) return;
-        int index = _annotations.IndexOf(_selectedAnnotation);
-        // Already at bottom
-        if (index <= 0) return;
-
-        _history.CreateAnnotationsMemento();
-        _annotations.RemoveAt(index);
-        _annotations.Insert(0, _selectedAnnotation);
-        AnnotationOrderChanged?.Invoke();
-        HistoryChanged?.Invoke();
-        InvalidateRequested?.Invoke();
+        MoveSelectedAnnotation(0);
     }
 
     /// <summary>
@@ -1234,17 +1120,10 @@ public class EditorCore : IDisposable
     /// </summary>
     public void BringForward()
     {
-        if (_selectedAnnotation == null || !_annotations.Contains(_selectedAnnotation)) return;
-        int index = _annotations.IndexOf(_selectedAnnotation);
-        // Already at top
-        if (index < 0 || index == _annotations.Count - 1) return;
-
-        _history.CreateAnnotationsMemento();
-        _annotations.RemoveAt(index);
-        _annotations.Insert(index + 1, _selectedAnnotation);
-        AnnotationOrderChanged?.Invoke();
-        HistoryChanged?.Invoke();
-        InvalidateRequested?.Invoke();
+        if (_selectedAnnotation != null)
+        {
+            MoveSelectedAnnotation(_annotations.IndexOf(_selectedAnnotation) + 1);
+        }
     }
 
     /// <summary>
@@ -1252,14 +1131,28 @@ public class EditorCore : IDisposable
     /// </summary>
     public void SendBackward()
     {
-        if (_selectedAnnotation == null || !_annotations.Contains(_selectedAnnotation)) return;
+        if (_selectedAnnotation != null)
+        {
+            MoveSelectedAnnotation(_annotations.IndexOf(_selectedAnnotation) - 1);
+        }
+    }
+
+    private void MoveSelectedAnnotation(int targetIndex)
+    {
+        if (_selectedAnnotation == null || targetIndex < 0 || targetIndex >= _annotations.Count)
+        {
+            return;
+        }
+
         int index = _annotations.IndexOf(_selectedAnnotation);
-        // Already at bottom
-        if (index <= 0) return;
+        if (index < 0 || index == targetIndex)
+        {
+            return;
+        }
 
         _history.CreateAnnotationsMemento();
         _annotations.RemoveAt(index);
-        _annotations.Insert(index - 1, _selectedAnnotation);
+        _annotations.Insert(targetIndex, _selectedAnnotation);
         AnnotationOrderChanged?.Invoke();
         HistoryChanged?.Invoke();
         InvalidateRequested?.Invoke();
@@ -1600,40 +1493,7 @@ public class EditorCore : IDisposable
                 continue;
             }
 
-            // Adjust annotation coordinates
-            annotation.StartPoint = new SKPoint(
-                annotation.StartPoint.X + offsetX,
-                annotation.StartPoint.Y + offsetY);
-            annotation.EndPoint = new SKPoint(
-                annotation.EndPoint.X + offsetX,
-                annotation.EndPoint.Y + offsetY);
-
-            // Handle freehand annotations (they have a Points list)
-            if (annotation is FreehandAnnotation freehand)
-            {
-                for (int j = 0; j < freehand.Points.Count; j++)
-                {
-                    freehand.Points[j] = new SKPoint(
-                        freehand.Points[j].X + offsetX,
-                        freehand.Points[j].Y + offsetY);
-                }
-            }
-
-            // XIP0039 Guardrail 2: Adjust SpeechBalloon tail point so it stays
-            // anchored to the same visual position relative to the new canvas origin.
-            if (annotation is SpeechBalloonAnnotation balloon)
-            {
-                var tailPoint = balloon.GetEffectiveTailPoint();
-                balloon.SetTailPoint(new SKPoint(
-                    tailPoint.X + offsetX,
-                    tailPoint.Y + offsetY));
-            }
-            else if (annotation is NumberAnnotation number && number.HasTailPoint)
-            {
-                number.SetTailPoint(new SKPoint(
-                    number.TailPoint.X + offsetX,
-                    number.TailPoint.Y + offsetY));
-            }
+            annotation.TransformPoints(point => new SKPoint(point.X + offsetX, point.Y + offsetY));
 
             // Update effect annotations with new bounds
             if (annotation is BaseEffectAnnotation effect)
@@ -1666,315 +1526,36 @@ public class EditorCore : IDisposable
     public void PerformCutOut()
     {
         var cutOutAnnotation = _annotations.OfType<CutOutAnnotation>().FirstOrDefault();
-        if (cutOutAnnotation == null || SourceImage == null) return;
+        if (cutOutAnnotation == null || SourceImage == null)
+        {
+            return;
+        }
 
-        var bounds = cutOutAnnotation.GetBounds();
-
-        // Create canvas memento before destructive cutout operation
+        SKRect bounds = cutOutAnnotation.GetBounds();
         _history.CreateCanvasMemento();
 
-        if (cutOutAnnotation.IsVertical)
+        bool isVertical = cutOutAnnotation.IsVertical;
+        int imageLength = isVertical ? SourceImage.Width : SourceImage.Height;
+        if (imageLength <= 0)
         {
-            // Vertical cut: remove a vertical strip and join left and right parts
-            int cutX = (int)Math.Round(bounds.MidX);
-            int cutWidth = (int)Math.Max(1, Math.Round(bounds.Width));
-
-            // Clamp to image bounds
-            if (cutX < 0) cutX = 0;
-            if (cutX >= SourceImage.Width) cutX = SourceImage.Width - 1;
-
-            // Ensure we don't cut past the end of the image
-            int maxCutWidth = SourceImage.Width - cutX;
-            if (cutWidth > maxCutWidth) cutWidth = maxCutWidth;
-
-            if (cutWidth <= 0)
-            {
-                return;
-            }
-
-            int newWidth = SourceImage.Width - cutWidth;
-            if (newWidth <= 0)
-            {
-                return;
-            }
-
-            var resultBitmap = new SKBitmap(newWidth, SourceImage.Height);
-            using (var canvas = new SKCanvas(resultBitmap))
-            {
-                // Draw left part
-                if (cutX > 0)
-                {
-                    var sourceRect = new SKRect(0, 0, cutX, SourceImage.Height);
-                    var destRect = new SKRect(0, 0, cutX, SourceImage.Height);
-                    canvas.DrawBitmap(SourceImage, sourceRect, destRect);
-                }
-
-                // Draw right part
-                int rightStart = cutX + cutWidth;
-                if (rightStart < SourceImage.Width)
-                {
-                    var sourceRect = new SKRect(rightStart, 0, SourceImage.Width, SourceImage.Height);
-                    var destRect = new SKRect(cutX, 0, newWidth, SourceImage.Height);
-                    canvas.DrawBitmap(SourceImage, sourceRect, destRect);
-                }
-            }
-
-            SourceImage.Dispose();
-            SourceImage = resultBitmap;
-            CanvasSize = new SKSize(newWidth, SourceImage.Height);
-
-            // Adjust annotations for vertical cut
-            AdjustAnnotationsForVerticalCut(cutX, cutWidth, newWidth);
-        }
-        else
-        {
-            // Horizontal cut: remove a horizontal strip and join top and bottom parts
-            int cutY = (int)Math.Round(bounds.MidY);
-            int cutHeight = (int)Math.Max(1, Math.Round(bounds.Height));
-
-            // Clamp to image bounds
-            if (cutY < 0) cutY = 0;
-            if (cutY >= SourceImage.Height) cutY = SourceImage.Height - 1;
-
-            // Ensure we don't cut past the end of the image
-            int maxCutHeight = SourceImage.Height - cutY;
-            if (cutHeight > maxCutHeight) cutHeight = maxCutHeight;
-
-            if (cutHeight <= 0)
-            {
-                return;
-            }
-
-            int newHeight = SourceImage.Height - cutHeight;
-            if (newHeight <= 0)
-            {
-                return;
-            }
-
-            var resultBitmap = new SKBitmap(SourceImage.Width, newHeight);
-            using (var canvas = new SKCanvas(resultBitmap))
-            {
-                // Draw top part
-                if (cutY > 0)
-                {
-                    var sourceRect = new SKRect(0, 0, SourceImage.Width, cutY);
-                    var destRect = new SKRect(0, 0, SourceImage.Width, cutY);
-                    canvas.DrawBitmap(SourceImage, sourceRect, destRect);
-                }
-
-                // Draw bottom part
-                int bottomStart = cutY + cutHeight;
-                if (bottomStart < SourceImage.Height)
-                {
-                    var sourceRect = new SKRect(0, bottomStart, SourceImage.Width, SourceImage.Height);
-                    var destRect = new SKRect(0, cutY, SourceImage.Width, newHeight);
-                    canvas.DrawBitmap(SourceImage, sourceRect, destRect);
-                }
-            }
-
-            SourceImage.Dispose();
-            SourceImage = resultBitmap;
-            CanvasSize = new SKSize(SourceImage.Width, newHeight);
-
-            // Adjust annotations for horizontal cut
-            AdjustAnnotationsForHorizontalCut(cutY, cutHeight, newHeight);
+            return;
         }
 
-        // Remove cutout annotation
+        int startPos = (int)Math.Round(isVertical ? bounds.MidX : bounds.MidY);
+        int cutLength = (int)Math.Max(1, Math.Round(isVertical ? bounds.Width : bounds.Height));
+
+        startPos = Math.Clamp(startPos, 0, imageLength - 1);
+        cutLength = Math.Min(cutLength, imageLength - startPos);
+        if (cutLength <= 0 || cutLength >= imageLength)
+        {
+            return;
+        }
+
+        ApplyCutOut(SourceImage, startPos, startPos + cutLength, isVertical);
         _annotations.Remove(cutOutAnnotation);
 
         ImageChanged?.Invoke();
         InvalidateRequested?.Invoke();
-    }
-
-    private void AdjustAnnotationsForVerticalCut(int cutX, int cutWidth, int newWidth)
-    {
-        int cutEnd = cutX + cutWidth;
-
-        // Process annotations in reverse to allow safe removal
-        for (int i = _annotations.Count - 1; i >= 0; i--)
-        {
-            var annotation = _annotations[i];
-            var bounds = annotation.GetBounds();
-
-            // Remove annotations completely within the cut area
-            if (bounds.Left >= cutX && bounds.Right <= cutEnd)
-            {
-                _annotations.RemoveAt(i);
-                continue;
-            }
-
-            // Adjust annotations that cross or are to the right of the cut
-            bool needsAdjustment = false;
-            float offsetX = 0;
-
-            // Annotations to the right of the cut area: shift left by cutWidth
-            if (bounds.Left >= cutEnd)
-            {
-                offsetX = -cutWidth;
-                needsAdjustment = true;
-            }
-            // Annotations that span across the cut: shift right portion left
-            else if (bounds.Right > cutEnd)
-            {
-                offsetX = -cutWidth;
-                needsAdjustment = true;
-                // Clamp the left edge to not go into the cut area
-                if (annotation.StartPoint.X > cutX && annotation.StartPoint.X < cutEnd)
-                {
-                    annotation.StartPoint = new SKPoint(cutX, annotation.StartPoint.Y);
-                }
-                if (annotation.EndPoint.X > cutX && annotation.EndPoint.X < cutEnd)
-                {
-                    annotation.EndPoint = new SKPoint(cutX, annotation.EndPoint.Y);
-                }
-            }
-
-            if (needsAdjustment)
-            {
-                annotation.StartPoint = new SKPoint(annotation.StartPoint.X + offsetX, annotation.StartPoint.Y);
-                annotation.EndPoint = new SKPoint(annotation.EndPoint.X + offsetX, annotation.EndPoint.Y);
-
-                // Handle freehand annotations
-                if (annotation is FreehandAnnotation freehand)
-                {
-                    for (int j = 0; j < freehand.Points.Count; j++)
-                    {
-                        var pt = freehand.Points[j];
-                        if (pt.X >= cutEnd)
-                        {
-                            freehand.Points[j] = new SKPoint(pt.X - cutWidth, pt.Y);
-                        }
-                        else if (pt.X > cutX)
-                        {
-                            freehand.Points[j] = new SKPoint(cutX, pt.Y);
-                        }
-                    }
-                }
-
-                // XIP0039 Guardrail 2: Adjust SpeechBalloon tail for vertical cut
-                if (annotation is SpeechBalloonAnnotation balloon)
-                {
-                    var tailPoint = balloon.GetEffectiveTailPoint();
-                    float tailX = tailPoint.X;
-                    if (tailX >= cutEnd)
-                        tailX -= cutWidth;
-                    else if (tailX > cutX)
-                        tailX = cutX;
-                    balloon.SetTailPoint(new SKPoint(tailX, tailPoint.Y));
-                }
-                else if (annotation is NumberAnnotation number && number.HasTailPoint)
-                {
-                    float tailX = number.TailPoint.X;
-                    if (tailX >= cutEnd)
-                        tailX -= cutWidth;
-                    else if (tailX > cutX)
-                        tailX = cutX;
-                    number.SetTailPoint(new SKPoint(tailX, number.TailPoint.Y));
-                }
-
-                // Update effect annotations
-                if (annotation is BaseEffectAnnotation effect && SourceImage != null)
-                {
-                    effect.UpdateEffect(SourceImage);
-                }
-            }
-        }
-    }
-
-    private void AdjustAnnotationsForHorizontalCut(int cutY, int cutHeight, int newHeight)
-    {
-        int cutEnd = cutY + cutHeight;
-
-        // Process annotations in reverse to allow safe removal
-        for (int i = _annotations.Count - 1; i >= 0; i--)
-        {
-            var annotation = _annotations[i];
-            var bounds = annotation.GetBounds();
-
-            // Remove annotations completely within the cut area
-            if (bounds.Top >= cutY && bounds.Bottom <= cutEnd)
-            {
-                _annotations.RemoveAt(i);
-                continue;
-            }
-
-            // Adjust annotations that cross or are below the cut
-            bool needsAdjustment = false;
-            float offsetY = 0;
-
-            // Annotations below the cut area: shift up by cutHeight
-            if (bounds.Top >= cutEnd)
-            {
-                offsetY = -cutHeight;
-                needsAdjustment = true;
-            }
-            // Annotations that span across the cut: shift bottom portion up
-            else if (bounds.Bottom > cutEnd)
-            {
-                offsetY = -cutHeight;
-                needsAdjustment = true;
-                // Clamp the top edge to not go into the cut area
-                if (annotation.StartPoint.Y > cutY && annotation.StartPoint.Y < cutEnd)
-                {
-                    annotation.StartPoint = new SKPoint(annotation.StartPoint.X, cutY);
-                }
-                if (annotation.EndPoint.Y > cutY && annotation.EndPoint.Y < cutEnd)
-                {
-                    annotation.EndPoint = new SKPoint(annotation.EndPoint.X, cutY);
-                }
-            }
-
-            if (needsAdjustment)
-            {
-                annotation.StartPoint = new SKPoint(annotation.StartPoint.X, annotation.StartPoint.Y + offsetY);
-                annotation.EndPoint = new SKPoint(annotation.EndPoint.X, annotation.EndPoint.Y + offsetY);
-
-                // Handle freehand annotations
-                if (annotation is FreehandAnnotation freehand)
-                {
-                    for (int j = 0; j < freehand.Points.Count; j++)
-                    {
-                        var pt = freehand.Points[j];
-                        if (pt.Y >= cutEnd)
-                        {
-                            freehand.Points[j] = new SKPoint(pt.X, pt.Y - cutHeight);
-                        }
-                        else if (pt.Y > cutY)
-                        {
-                            freehand.Points[j] = new SKPoint(pt.X, cutY);
-                        }
-                    }
-                }
-
-                // XIP0039 Guardrail 2: Adjust SpeechBalloon tail for horizontal cut
-                if (annotation is SpeechBalloonAnnotation balloon)
-                {
-                    var tailPoint = balloon.GetEffectiveTailPoint();
-                    float tailY = tailPoint.Y;
-                    if (tailY >= cutEnd)
-                        tailY -= cutHeight;
-                    else if (tailY > cutY)
-                        tailY = cutY;
-                    balloon.SetTailPoint(new SKPoint(tailPoint.X, tailY));
-                }
-                else if (annotation is NumberAnnotation number && number.HasTailPoint)
-                {
-                    float tailY = number.TailPoint.Y;
-                    if (tailY >= cutEnd)
-                        tailY -= cutHeight;
-                    else if (tailY > cutY)
-                        tailY = cutY;
-                    number.SetTailPoint(new SKPoint(number.TailPoint.X, tailY));
-                }
-
-                // Update effect annotations
-                if (annotation is BaseEffectAnnotation effect && SourceImage != null)
-                {
-                    effect.UpdateEffect(SourceImage);
-                }
-            }
-        }
     }
 
     #endregion
@@ -1987,7 +1568,18 @@ public class EditorCore : IDisposable
     public void Dispose()
     {
         _history?.Dispose();
+
+        foreach (Annotation annotation in _annotations)
+        {
+            if (annotation is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+
+        _annotations.Clear();
         SourceImage?.Dispose();
+        SourceImage = null;
     }
 
     #endregion

@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="HistoryHelpers_Empty" xml:space="preserve">
+    <value>(leeg)</value>
+  </data>
+  <data name="HistoryHelpers_FileExtensions" xml:space="preserve">
+    <value>Bestandsextensies:</value>
+  </data>
+  <data name="HistoryHelpers_HistoryItemCounts" xml:space="preserve">
+    <value>Aantal geschiedenisitems:</value>
+  </data>
+  <data name="HistoryHelpers_Hosts" xml:space="preserve">
+    <value>Hosts:</value>
+  </data>
+  <data name="HistoryHelpers_ProcessNames" xml:space="preserve">
+    <value>Procesnamen:</value>
+  </data>
+  <data name="HistoryHelpers_Total" xml:space="preserve">
+    <value>Totaal:</value>
+  </data>
+  <data name="HistoryHelpers_YearlyUsages" xml:space="preserve">
+    <value>Jaarlijks gebruik:</value>
+  </data>
+  <data name="HistoryManager_Error" xml:space="preserve">
+    <value>Fout</value>
+  </data>
+  <data name="HistoryManager_ErrorOccurredWhileReadingHistoryFile" xml:space="preserve">
+    <value>Er is een fout opgetreden bij het lezen van het geschiedenisbestand:</value>
+  </data>
+  <data name="HistoryWindow_CalculatingStatistics" xml:space="preserve">
+    <value>Statistieken berekenen...</value>
+  </data>
+  <data name="HistoryWindow_ConfirmDeleteFormat" xml:space="preserve">
+    <value>Wilt u {0} echt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</value>
+  </data>
+  <data name="HistoryWindow_Delete" xml:space="preserve">
+    <value>Verwijderen</value>
+  </data>
+  <data name="HistoryWindow_DeleteFiles" xml:space="preserve">
+    <value>Bestanden verwijderen?</value>
+  </data>
+  <data name="HistoryWindow_DeleteHistoryItems" xml:space="preserve">
+    <value>Geschiedenisitems verwijderen?</value>
+  </data>
+  <data name="HistoryWindow_EditTag" xml:space="preserve">
+    <value>Tag bewerken</value>
+  </data>
+  <data name="HistoryWindow_EnterNewFileName" xml:space="preserve">
+    <value>Voer een nieuwe bestandsnaam in.</value>
+  </data>
+  <data name="HistoryWindow_EnterTagForHistoryItem" xml:space="preserve">
+    <value>Voer een tag in voor dit geschiedenisitem.</value>
+  </data>
+  <data name="HistoryWindow_ImportingFiles" xml:space="preserve">
+    <value>Bestanden importeren...</value>
+  </data>
+  <data name="HistoryWindow_ItemsFormat" xml:space="preserve">
+    <value>{0:N0} items</value>
+  </data>
+  <data name="HistoryWindow_NoItemsMatchCurrentFilters" xml:space="preserve">
+    <value>Geen items komen overeen met de huidige filters</value>
+  </data>
+  <data name="HistoryWindow_Rename" xml:space="preserve">
+    <value>Naam wijzigen</value>
+  </data>
+  <data name="HistoryWindow_RenameFile" xml:space="preserve">
+    <value>Bestandsnaam wijzigen</value>
+  </data>
+  <data name="HistoryWindow_SelectFolderToImport" xml:space="preserve">
+    <value>Selecteer de te importeren map</value>
+  </data>
+  <data name="HistoryWindow_SelectedFolderDoesNotExist" xml:space="preserve">
+    <value>De geselecteerde map bestaat niet.</value>
+  </data>
+  <data name="HistoryWindow_SuccessfullyImportedFilesFormat" xml:space="preserve">
+    <value>{0:N0} bestanden geïmporteerd.</value>
+  </data>
+  <data name="HistoryWindow_TheseFilesFormat" xml:space="preserve">
+    <value>deze {0:N0} bestanden</value>
+  </data>
+  <data name="HistoryWindow_TheseItemsFormat" xml:space="preserve">
+    <value>deze {0:N0} items</value>
+  </data>
+  <data name="HistoryWindow_ThisFile" xml:space="preserve">
+    <value>dit bestand</value>
+  </data>
+  <data name="HistoryWindow_ThisItem" xml:space="preserve">
+    <value>dit item</value>
+  </data>
+  <data name="HistoryWindow_Unfavorite" xml:space="preserve">
+    <value>Uit favorieten verwijderen</value>
+  </data>
+  <data name="HistoryWindows_Advanced" xml:space="preserve">
+    <value>Geavanceerd</value>
+  </data>
+  <data name="HistoryWindows_Advanced_filters" xml:space="preserve">
+    <value>Geavanceerde filters</value>
+  </data>
+  <data name="HistoryWindows_All_hosts" xml:space="preserve">
+    <value>Alle hosts</value>
+  </data>
+  <data name="HistoryWindows_All_types" xml:space="preserve">
+    <value>Alle typen</value>
+  </data>
+  <data name="HistoryWindows_Analyze_image" xml:space="preserve">
+    <value>Afbeelding analyseren</value>
+  </data>
+  <data name="HistoryWindows_Bottom" xml:space="preserve">
+    <value>Onder</value>
+  </data>
+  <data name="HistoryWindows_Browse" xml:space="preserve">
+    <value>Bladeren...</value>
+  </data>
+  <data name="HistoryWindows_Cancel" xml:space="preserve">
+    <value>Annuleren</value>
+  </data>
+  <data name="HistoryWindows_Close" xml:space="preserve">
+    <value>Sluiten</value>
+  </data>
+  <data name="HistoryWindows_Copy" xml:space="preserve">
+    <value>Kopieer</value>
+  </data>
+  <data name="HistoryWindows_Date" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="HistoryWindows_Date_range" xml:space="preserve">
+    <value>Datumbereik</value>
+  </data>
+  <data name="HistoryWindows_Delete_file_and_history_item" xml:space="preserve">
+    <value>Bestand en geschiedenisitem verwijderen...</value>
+  </data>
+  <data name="HistoryWindows_Delete_from_history" xml:space="preserve">
+    <value>Uit geschiedenis verwijderen...</value>
+  </data>
+  <data name="HistoryWindows_Deletion_URL" xml:space="preserve">
+    <value>Verwijderings-URL</value>
+  </data>
+  <data name="HistoryWindows_Done" xml:space="preserve">
+    <value>Klaar</value>
+  </data>
+  <data name="HistoryWindows_EditImageInPhotoEditor" xml:space="preserve">
+    <value>Bewerken in foto-editor...</value>
+  </data>
+  <data name="HistoryWindows_Edit_history_item" xml:space="preserve">
+    <value>Geschiedenisitem bewerken</value>
+  </data>
+  <data name="HistoryWindows_Edit_image" xml:space="preserve">
+    <value>Bewerken afbeelding</value>
+  </data>
+  <data name="HistoryWindows_Edit_item" xml:space="preserve">
+    <value>Item bewerken...</value>
+  </data>
+  <data name="HistoryWindows_Edit_tag" xml:space="preserve">
+    <value>Tag bewerken...</value>
+  </data>
+  <data name="HistoryWindows_Favorite" xml:space="preserve">
+    <value>Favoriet</value>
+  </data>
+  <data name="HistoryWindows_Favorites" xml:space="preserve">
+    <value>Favorieten</value>
+  </data>
+  <data name="HistoryWindows_File" xml:space="preserve">
+    <value>Bestand</value>
+  </data>
+  <data name="HistoryWindows_File_name" xml:space="preserve">
+    <value>Bestandsnaam</value>
+  </data>
+  <data name="HistoryWindows_File_name_with_extension" xml:space="preserve">
+    <value>Bestandsnaam met extensie</value>
+  </data>
+  <data name="HistoryWindows_File_path" xml:space="preserve">
+    <value>Bestandspad</value>
+  </data>
+  <data name="HistoryWindows_Folder" xml:space="preserve">
+    <value>Map</value>
+  </data>
+  <data name="HistoryWindows_Folder_path" xml:space="preserve">
+    <value>Mappad</value>
+  </data>
+  <data name="HistoryWindows_Forum_BBCode_image" xml:space="preserve">
+    <value>Forumafbeelding (BBCode)</value>
+  </data>
+  <data name="HistoryWindows_Forum_BBCode_link" xml:space="preserve">
+    <value>Forumlink (BBCode)</value>
+  </data>
+  <data name="HistoryWindows_Forum_BBCode_linked_image" xml:space="preserve">
+    <value>Gekoppelde forumafbeelding (BBCode)</value>
+  </data>
+  <data name="HistoryWindows_Forum_image" xml:space="preserve">
+    <value>Forumafbeelding</value>
+  </data>
+  <data name="HistoryWindows_Forum_link" xml:space="preserve">
+    <value>Forumlink</value>
+  </data>
+  <data name="HistoryWindows_Forum_linked_image" xml:space="preserve">
+    <value>Gekoppelde forumafbeelding</value>
+  </data>
+  <data name="HistoryWindows_HTML_image" xml:space="preserve">
+    <value>HTML-afbeelding</value>
+  </data>
+  <data name="HistoryWindows_HTML_link" xml:space="preserve">
+    <value>HTML-link</value>
+  </data>
+  <data name="HistoryWindows_HTML_linked_image" xml:space="preserve">
+    <value>Gekoppelde HTML-afbeelding</value>
+  </data>
+  <data name="HistoryWindows_Hide_missing_files" xml:space="preserve">
+    <value>Ontbrekende bestanden verbergen</value>
+  </data>
+  <data name="HistoryWindows_History_settings" xml:space="preserve">
+    <value>Geschiedenisinstellingen</value>
+  </data>
+  <data name="HistoryWindows_History_statistics" xml:space="preserve">
+    <value>Geschiedenisstatistieken</value>
+  </data>
+  <data name="HistoryWindows_Host" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="HistoryWindows_Image" xml:space="preserve">
+    <value>Afbeelding</value>
+  </data>
+  <data name="HistoryWindows_Image_history_settings" xml:space="preserve">
+    <value>Instellingen voor afbeeldingsgeschiedenis</value>
+  </data>
+  <data name="HistoryWindows_Import" xml:space="preserve">
+    <value>Importeren</value>
+  </data>
+  <data name="HistoryWindows_Import_folder" xml:space="preserve">
+    <value>Map importeren</value>
+  </data>
+  <data name="HistoryWindows_Items_per_batch" xml:space="preserve">
+    <value>Items per batch</value>
+  </data>
+  <data name="HistoryWindows_Load_the_next_batch_near_the_end" xml:space="preserve">
+    <value>Volgende batch laden aan het einde</value>
+  </data>
+  <data name="HistoryWindows_Loading" xml:space="preserve">
+    <value>Laden...</value>
+  </data>
+  <data name="HistoryWindows_Markdown_image" xml:space="preserve">
+    <value>Markdown-afbeelding</value>
+  </data>
+  <data name="HistoryWindows_Markdown_link" xml:space="preserve">
+    <value>Markdown-link</value>
+  </data>
+  <data name="HistoryWindows_Markdown_linked_image" xml:space="preserve">
+    <value>Gekoppelde Markdown-afbeelding</value>
+  </data>
+  <data name="HistoryWindows_No_history_items" xml:space="preserve">
+    <value>Geen geschiedenisitems</value>
+  </data>
+  <data name="HistoryWindows_No_image_history_items" xml:space="preserve">
+    <value>Geen items in afbeeldingsgeschiedenis</value>
+  </data>
+  <data name="HistoryWindows_No_image_preview" xml:space="preserve">
+    <value>Geen afbeeldingsvoorbeeld</value>
+  </data>
+  <data name="HistoryWindows_None" xml:space="preserve">
+    <value>Geen</value>
+  </data>
+  <data name="HistoryWindows_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="HistoryWindows_One_key_value_pair_per_line" xml:space="preserve">
+    <value>Eén sleutel=waarde-paar per regel</value>
+  </data>
+  <data name="HistoryWindows_Only_import_image_files" xml:space="preserve">
+    <value>Alleen afbeeldingsbestanden importeren</value>
+  </data>
+  <data name="HistoryWindows_Open" xml:space="preserve">
+    <value>Openen</value>
+  </data>
+  <data name="HistoryWindows_Open_image" xml:space="preserve">
+    <value>Afbeelding openen</value>
+  </data>
+  <data name="HistoryWindows_Pin_to_screen" xml:space="preserve">
+    <value>Pin to scherm</value>
+  </data>
+  <data name="HistoryWindows_Remember_search_text" xml:space="preserve">
+    <value>Zoektekst onthouden</value>
+  </data>
+  <data name="HistoryWindows_Remember_window_size_and_position" xml:space="preserve">
+    <value>Venstergrootte en -positie onthouden</value>
+  </data>
+  <data name="HistoryWindows_Rename_file" xml:space="preserve">
+    <value>Bestandsnaam wijzigen...</value>
+  </data>
+  <data name="HistoryWindows_Reset_filters" xml:space="preserve">
+    <value>Filters herstellen</value>
+  </data>
+  <data name="HistoryWindows_Save" xml:space="preserve">
+    <value>Opslaan</value>
+  </data>
+  <data name="HistoryWindows_Search_file_names_and_tags" xml:space="preserve">
+    <value>Bestandsnamen en tags doorzoeken</value>
+  </data>
+  <data name="HistoryWindows_Select_an_item_to_preview" xml:space="preserve">
+    <value>Selecteer een item voor voorbeeld</value>
+  </data>
+  <data name="HistoryWindows_Settings" xml:space="preserve">
+    <value>Instellingen</value>
+  </data>
+  <data name="HistoryWindows_ShareX_History" xml:space="preserve">
+    <value>ShareX - Geschiedenis</value>
+  </data>
+  <data name="HistoryWindows_ShareX_Image_History" xml:space="preserve">
+    <value>ShareX - Afbeeldingsgeschiedenis</value>
+  </data>
+  <data name="HistoryWindows_Shortened_URL" xml:space="preserve">
+    <value>Verkorte URL</value>
+  </data>
+  <data name="HistoryWindows_Show_image_files_only" xml:space="preserve">
+    <value>Alleen afbeeldings- en videobestanden tonen</value>
+  </data>
+  <data name="HistoryWindows_Show_image_preview" xml:space="preserve">
+    <value>Afbeeldingsvoorbeeld tonen</value>
+  </data>
+  <data name="HistoryWindows_Skip_duplicate_files" xml:space="preserve">
+    <value>Dubbele bestanden overslaan</value>
+  </data>
+  <data name="HistoryWindows_Stats" xml:space="preserve">
+    <value>Statistieken</value>
+  </data>
+  <data name="HistoryWindows_Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="HistoryWindows_Text" xml:space="preserve">
+    <value>Tekst</value>
+  </data>
+  <data name="HistoryWindows_Thumbnail_URL" xml:space="preserve">
+    <value>Miniatuur URL</value>
+  </data>
+  <data name="HistoryWindows_Thumbnail_header" xml:space="preserve">
+    <value>Miniatuurkop</value>
+  </data>
+  <data name="HistoryWindows_Thumbnail_height" xml:space="preserve">
+    <value>Miniatuurhoogte</value>
+  </data>
+  <data name="HistoryWindows_Thumbnail_width" xml:space="preserve">
+    <value>Miniatuurbreedte</value>
+  </data>
+  <data name="HistoryWindows_Toggle_favorite" xml:space="preserve">
+    <value>Favoriet omschakelen</value>
+  </data>
+  <data name="HistoryWindows_Top" xml:space="preserve">
+    <value>Boven</value>
+  </data>
+  <data name="HistoryWindows_TrimAnimatedGif" xml:space="preserve">
+    <value>Geanimeerde GIF bijsnijden...</value>
+  </data>
+  <data name="HistoryWindows_TrimVideo" xml:space="preserve">
+    <value>Video bijsnijden...</value>
+  </data>
+  <data name="HistoryWindows_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="HistoryWindows_URL" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="HistoryWindows_Upload_file" xml:space="preserve">
+    <value>Upload bestand</value>
+  </data>
+  <data name="ImageHistoryWindow_CalculatingStatistics" xml:space="preserve">
+    <value>Statistieken berekenen...</value>
+  </data>
+  <data name="ImageHistoryWindow_ConfirmDeleteFormat" xml:space="preserve">
+    <value>Wilt u {0} echt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</value>
+  </data>
+  <data name="ImageHistoryWindow_ConfirmOpenFileFormat" xml:space="preserve">
+    <value>Wilt u dit bestand openen?
+
+{0}</value>
+  </data>
+  <data name="ImageHistoryWindow_Delete" xml:space="preserve">
+    <value>Verwijderen</value>
+  </data>
+  <data name="ImageHistoryWindow_DeleteFiles" xml:space="preserve">
+    <value>Bestanden verwijderen?</value>
+  </data>
+  <data name="ImageHistoryWindow_DeleteHistoryItems" xml:space="preserve">
+    <value>Geschiedenisitems verwijderen?</value>
+  </data>
+  <data name="ImageHistoryWindow_EditTag" xml:space="preserve">
+    <value>Tag bewerken</value>
+  </data>
+  <data name="ImageHistoryWindow_EnterNewFileName" xml:space="preserve">
+    <value>Voer een nieuwe bestandsnaam in.</value>
+  </data>
+  <data name="ImageHistoryWindow_EnterTagForHistoryItem" xml:space="preserve">
+    <value>Voer een tag in voor dit geschiedenisitem.</value>
+  </data>
+  <data name="ImageHistoryWindow_ImportingFiles" xml:space="preserve">
+    <value>Bestanden importeren...</value>
+  </data>
+  <data name="ImageHistoryWindow_ItemsFormat" xml:space="preserve">
+    <value>{0:N0} items</value>
+  </data>
+  <data name="ImageHistoryWindow_NoItemsMatchCurrentFilter" xml:space="preserve">
+    <value>Geen items komen overeen met het huidige filter</value>
+  </data>
+  <data name="ImageHistoryWindow_OpenFile" xml:space="preserve">
+    <value>Bestand openen?</value>
+  </data>
+  <data name="ImageHistoryWindow_Rename" xml:space="preserve">
+    <value>Naam wijzigen</value>
+  </data>
+  <data name="ImageHistoryWindow_RenameFile" xml:space="preserve">
+    <value>Bestandsnaam wijzigen</value>
+  </data>
+  <data name="ImageHistoryWindow_SelectFolderToImport" xml:space="preserve">
+    <value>Selecteer de te importeren map</value>
+  </data>
+  <data name="ImageHistoryWindow_SelectedFolderDoesNotExist" xml:space="preserve">
+    <value>De geselecteerde map bestaat niet.</value>
+  </data>
+  <data name="ImageHistoryWindow_SuccessfullyImportedFilesFormat" xml:space="preserve">
+    <value>{0:N0} bestanden geïmporteerd.</value>
+  </data>
+  <data name="ImageHistoryWindow_TheseFilesFormat" xml:space="preserve">
+    <value>deze {0:N0} bestanden</value>
+  </data>
+  <data name="ImageHistoryWindow_TheseItemsFormat" xml:space="preserve">
+    <value>deze {0:N0} items</value>
+  </data>
+  <data name="ImageHistoryWindow_ThisFile" xml:space="preserve">
+    <value>dit bestand</value>
+  </data>
+  <data name="ImageHistoryWindow_ThisItem" xml:space="preserve">
+    <value>dit item</value>
+  </data>
+  <data name="StatsWindow_AboutADay" xml:space="preserve">
+    <value>ongeveer {0} per dag</value>
+  </data>
+  <data name="StatsWindow_AboutAWeek" xml:space="preserve">
+    <value>ongeveer {0} per week</value>
+  </data>
+  <data name="StatsWindow_ActiveDays" xml:space="preserve">
+    <value>{0} van {1} actief</value>
+  </data>
+  <data name="StatsWindow_Afternoon" xml:space="preserve">
+    <value>Middag</value>
+  </data>
+  <data name="StatsWindow_All" xml:space="preserve">
+    <value>Alles</value>
+  </data>
+  <data name="StatsWindow_AllYears" xml:space="preserve">
+    <value>Alle jaren</value>
+  </data>
+  <data name="StatsWindow_BeforeHistory" xml:space="preserve">
+    <value>Voordat je geschiedenis begon</value>
+  </data>
+  <data name="StatsWindow_BusiestDay" xml:space="preserve">
+    <value>Drukste dag</value>
+  </data>
+  <data name="StatsWindow_BusiestOn" xml:space="preserve">
+    <value>drukst op {0}</value>
+  </data>
+  <data name="StatsWindow_BusiestTime" xml:space="preserve">
+    <value>drukst om {0}</value>
+  </data>
+  <data name="StatsWindow_CountingSince" xml:space="preserve">
+    <value>Geteld sinds {0} · {1}</value>
+  </data>
+  <data name="StatsWindow_DayOfWeek" xml:space="preserve">
+    <value>Dag van de week</value>
+  </data>
+  <data name="StatsWindow_Days" xml:space="preserve">
+    <value>{0} dagen</value>
+  </data>
+  <data name="StatsWindow_Destinations" xml:space="preserve">
+    <value>Bestemmingen</value>
+  </data>
+  <data name="StatsWindow_Evening" xml:space="preserve">
+    <value>Avond</value>
+  </data>
+  <data name="StatsWindow_EveryDay" xml:space="preserve">
+    <value>Elke dag</value>
+  </data>
+  <data name="StatsWindow_FileTypes" xml:space="preserve">
+    <value>Bestandstypen</value>
+  </data>
+  <data name="StatsWindow_Images" xml:space="preserve">
+    <value>Afbeeldingen</value>
+  </data>
+  <data name="StatsWindow_Less" xml:space="preserve">
+    <value>Minder</value>
+  </data>
+  <data name="StatsWindow_LongestStreak" xml:space="preserve">
+    <value>langste {0} tot {1}</value>
+  </data>
+  <data name="StatsWindow_LongestYet" xml:space="preserve">
+    <value>je langste tot nu toe</value>
+  </data>
+  <data name="StatsWindow_More" xml:space="preserve">
+    <value>Meer</value>
+  </data>
+  <data name="StatsWindow_Morning" xml:space="preserve">
+    <value>Ochtend</value>
+  </data>
+  <data name="StatsWindow_Night" xml:space="preserve">
+    <value>Nacht</value>
+  </data>
+  <data name="StatsWindow_NoData" xml:space="preserve">
+    <value>Nog geen gegevens</value>
+  </data>
+  <data name="StatsWindow_NoHistory" xml:space="preserve">
+    <value>Nog niets te tellen. Vastleggingen en uploads verschijnen hier zodra ze in de geschiedenis zijn opgeslagen.</value>
+  </data>
+  <data name="StatsWindow_NoneInPrevious7Days" xml:space="preserve">
+    <value>de 7 dagen ervoor geen</value>
+  </data>
+  <data name="StatsWindow_NonePrevious7DaysEither" xml:space="preserve">
+    <value>de 7 dagen ervoor ook geen</value>
+  </data>
+  <data name="StatsWindow_NothingYet" xml:space="preserve">
+    <value>nog niets</value>
+  </data>
+  <data name="StatsWindow_OneDay" xml:space="preserve">
+    <value>{0} dag</value>
+  </data>
+  <data name="StatsWindow_Other" xml:space="preserve">
+    <value>Overig</value>
+  </data>
+  <data name="StatsWindow_OtherFiles" xml:space="preserve">
+    <value>Overige bestanden</value>
+  </data>
+  <data name="StatsWindow_Past7Days" xml:space="preserve">
+    <value>Afgelopen 7 dagen</value>
+  </data>
+  <data name="StatsWindow_PastYear" xml:space="preserve">
+    <value>Afgelopen jaar</value>
+  </data>
+  <data name="StatsWindow_Recordings" xml:space="preserve">
+    <value>Opnames</value>
+  </data>
+  <data name="StatsWindow_Refresh" xml:space="preserve">
+    <value>Vernieuwen</value>
+  </data>
+  <data name="StatsWindow_Share" xml:space="preserve">
+    <value>Delen</value>
+  </data>
+  <data name="StatsWindow_ShareToolTip" xml:space="preserve">
+    <value>Maak een afbeelding van deze statistieken en voer je taken na vastleggen erop uit.</value>
+  </data>
+  <data name="StatsWindow_Stats" xml:space="preserve">
+    <value>Statistieken</value>
+  </data>
+  <data name="StatsWindow_Streak" xml:space="preserve">
+    <value>Reeks</value>
+  </data>
+  <data name="StatsWindow_TimeOfDay" xml:space="preserve">
+    <value>Tijd van de dag</value>
+  </data>
+  <data name="StatsWindow_Title" xml:space="preserve">
+    <value>ShareX - Statistieken</value>
+  </data>
+  <data name="StatsWindow_Today" xml:space="preserve">
+    <value>Vandaag</value>
+  </data>
+  <data name="StatsWindow_TopApps" xml:space="preserve">
+    <value>Meest vastgelegde apps</value>
+  </data>
+  <data name="StatsWindow_Total" xml:space="preserve">
+    <value>Totaal</value>
+  </data>
+  <data name="StatsWindow_TotalCount" xml:space="preserve">
+    <value>Totaal: {0}</value>
+  </data>
+  <data name="StatsWindow_VsPrevious7Days" xml:space="preserve">
+    <value>t.o.v. de 7 dagen ervoor</value>
+  </data>
+</root>

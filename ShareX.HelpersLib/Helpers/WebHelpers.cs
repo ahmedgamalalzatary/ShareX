@@ -24,13 +24,13 @@
 #endregion License Information (GPL v3)
 
 using System;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Bitmap = SkiaSharp.SKBitmap;
 
 namespace ShareX.HelpersLib
 {
@@ -99,7 +99,8 @@ namespace ShareX.HelpersLib
 
                             try
                             {
-                                bmp = new Bitmap(memoryStream);
+                                bmp = SkiaImageHelpers.Decode(memoryStream);
+                                memoryStream.Dispose();
                             }
                             catch
                             {
@@ -166,7 +167,7 @@ namespace ShareX.HelpersLib
 
                                 using (MemoryStream ms = new MemoryStream(dataBytes))
                                 {
-                                    return new Bitmap(ms);
+                                    return SkiaImageHelpers.Decode(ms);
                                 }
                             }
                             catch

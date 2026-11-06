@@ -23,19 +23,19 @@
 
 #endregion License Information (GPL v3)
 
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace ShareX.HelpersLib
 {
     public class ImageFilesCache : IDisposable
     {
-        private Dictionary<string, Bitmap> images = new Dictionary<string, Bitmap>();
+        private Dictionary<string, SKBitmap> images = new Dictionary<string, SKBitmap>();
 
-        public Bitmap GetImage(string filePath)
+        public SKBitmap GetImage(string filePath)
         {
-            Bitmap bmp = null;
+            SKBitmap bmp = null;
 
             if (!string.IsNullOrEmpty(filePath))
             {
@@ -44,39 +44,11 @@ namespace ShareX.HelpersLib
                     return images[filePath];
                 }
 
-                bmp = ImageHelpers.LoadImage(filePath);
+                bmp = SkiaImageHelpers.LoadImage(filePath);
 
                 if (bmp != null)
                 {
                     images.Add(filePath, bmp);
-                }
-            }
-
-            return bmp;
-        }
-
-        public Bitmap GetFileIconAsImage(string filePath, bool isSmallIcon = true)
-        {
-            Bitmap bmp = null;
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                if (images.ContainsKey(filePath))
-                {
-                    return images[filePath];
-                }
-
-                using (Icon icon = NativeMethods.GetFileIcon(filePath, isSmallIcon))
-                {
-                    if (icon != null && icon.Width > 0 && icon.Height > 0)
-                    {
-                        bmp = icon.ToBitmap();
-
-                        if (bmp != null)
-                        {
-                            images.Add(filePath, bmp);
-                        }
-                    }
                 }
             }
 
@@ -97,7 +69,7 @@ namespace ShareX.HelpersLib
         {
             if (images != null)
             {
-                foreach (Bitmap bmp in images.Values)
+                foreach (SKBitmap bmp in images.Values)
                 {
                     if (bmp != null)
                     {

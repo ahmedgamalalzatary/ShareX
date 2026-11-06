@@ -28,8 +28,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using ShareX.ImageEditor.Core.Annotations;
-using ShareX.ImageEditor.Hosting;
-using ShareX.ImageEditor.Presentation.Rendering;
+using ShareX.ImageEditor.Integration;
 using ShareX.ImageEditor.Presentation.ViewModels;
 using SkiaSharp;
 
@@ -37,12 +36,23 @@ namespace ShareX.ImageEditor.Presentation.Views
 {
     public partial class EditorView : UserControl
     {
+        /// <summary>Clears the shared annotation clipboard and releases its owned bitmap.</summary>
+        public static void ClearAnnotationClipboard() => ReplaceClipboardAnnotation(null);
+
+        private static void ReplaceClipboardAnnotation(Annotation? annotation)
+        {
+            if (ReferenceEquals(_clipboardAnnotation, annotation)) return;
+            var previous = _clipboardAnnotation;
+            _clipboardAnnotation = annotation;
+            (previous as IDisposable)?.Dispose();
+        }
+
         private async void OnCutRequested(object? sender, EventArgs e)
         {
             if (_selectionController.SelectedShape?.Tag is Annotation annotation)
             {
                 // Copy to internal clipboard
-                _clipboardAnnotation = annotation.Clone();
+                ReplaceClipboardAnnotation(annotation.Clone());
 
                 // Update clipboard status
                 _ = CheckClipboardStatus();
@@ -76,7 +86,7 @@ namespace ShareX.ImageEditor.Presentation.Views
             if (_selectionController.SelectedShape?.Tag is Annotation annotation)
             {
                 // Deep clone to internal clipboard
-                _clipboardAnnotation = annotation.Clone();
+                ReplaceClipboardAnnotation(annotation.Clone());
 
                 // Update clipboard status
                 _ = CheckClipboardStatus();
@@ -223,7 +233,7 @@ namespace ShareX.ImageEditor.Presentation.Views
                         if (file is IStorageFile storageFile)
                         {
                             var ext = System.IO.Path.GetExtension(storageFile.Name)?.ToLowerInvariant();
-                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif" || ext == ".webp" || ext == ".ico" || ext == ".tiff" || ext == ".tif")
+                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif" || ext == ".webp" || ext == ".ico")
                             {
                                 try
                                 {

@@ -27,8 +27,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
-using ShareX.ImageEditor.Hosting;
-using ShareX.ImageEditor.Presentation.Rendering;
+using ShareX.ImageEditor.Integration;
 using System.Collections.ObjectModel;
 
 namespace ShareX.ImageEditor.Presentation.ViewModels
@@ -463,6 +462,5 @@ namespace ShareX.ImageEditor.Presentation.ViewModels
                 }
             };
         }
-
     }
 }

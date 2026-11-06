@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class SpinBlurImageEffect : ImageEffectBase
     public override string Id => "spin_blur";
     public override string Name => "Spin blur";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.rotate_cw;
+    public override string IconKey => ImageEffectIcons.RotateClockwise;
     public override string Description => "Applies a rotational motion blur around a center point.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>

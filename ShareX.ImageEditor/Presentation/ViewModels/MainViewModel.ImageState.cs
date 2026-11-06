@@ -23,8 +23,6 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.ImageEditor.Presentation.Rendering;
-
 namespace ShareX.ImageEditor.Presentation.ViewModels
 {
     public partial class MainViewModel : ViewModelBase
@@ -103,6 +101,11 @@ namespace ShareX.ImageEditor.Presentation.ViewModels
         /// <param name="clearAnnotations">Whether to clear all annotations</param>
         public void UpdatePreview(SkiaSharp.SKBitmap image, bool clearAnnotations = true)
         {
+            if (_disposed)
+            {
+                image?.Dispose();
+                return;
+            }
             if (!IsBitmapAlive(image))
             {
                 return;

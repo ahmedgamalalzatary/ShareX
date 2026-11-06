@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class SolarizeImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "solarize";
     public override string Name => "Solarize";
-    public override string IconKey => LucideIcons.sun;
+    public override string IconKey => AppIcons.Sun;
     public override string Description => "Applies a solarize effect.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

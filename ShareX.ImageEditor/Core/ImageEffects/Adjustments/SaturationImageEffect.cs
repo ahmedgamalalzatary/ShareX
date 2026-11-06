@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class SaturationImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "saturation";
     public override string Name => "Saturation";
-    public override string IconKey => LucideIcons.droplets;
+    public override string IconKey => ImageEffectIcons.Droplets;
     public override string Description => "Adjusts the color saturation.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

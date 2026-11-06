@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class InfraredFalseColorImageEffect : ImageEffectBase
     public override string Id => "infrared_false_color";
     public override string Name => "Infrared false color";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.flame;
+    public override string IconKey => ImageEffectIcons.Flame;
     public override string Description => "Simulates infrared false color photography.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>

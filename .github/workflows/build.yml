@@ -11,13 +11,15 @@ on:
       - "**/*.gitignore"
       - "**/*.gitattributes"
 
-permissions:
-  contents: read
-
 jobs:
   build:
     name: Build
     runs-on: windows-latest
+    environment: release
+
+    permissions:
+      contents: read
+      id-token: write
 
     strategy:
       fail-fast: false
@@ -39,6 +41,7 @@ jobs:
     env:
       SOLUTION_FILE_PATH: ShareX.sln
       ASSEMBLY_INFO_PATH: Directory.build.props
+      FFMPEG_VERSION: "9.0"
 
     outputs:
       APP_VERSION: ${{ env.APP_VERSION }}
@@ -50,7 +53,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 10.0.x
 
       - name: Set PLATFORM & RUNTIME_ID
         run: |
@@ -72,13 +75,26 @@ jobs:
           echo $version
           echo "APP_VERSION=$version" >> $env:GITHUB_ENV
 
-      - name: Download API keys
+      - name: Disable Dev flag
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        run: |
+          $path = "ShareX\Infrastructure\ApplicationInfo.cs"
+          $content = [System.IO.File]::ReadAllText($path)
+          $pattern = 'internal const bool Dev = (true|false);'
+          if (-not [regex]::IsMatch($content, $pattern)) {
+            throw "Dev flag was not found in $path."
+          }
+          $content = [regex]::Replace($content, $pattern, 'internal const bool Dev = false;')
+          [System.IO.File]::WriteAllText($path, $content, [System.Text.UTF8Encoding]::new($false))
+
+      - name: Create API keys file
         env:
           API_KEYS: ${{ secrets.API_KEYS }}
         if: env.API_KEYS != ''
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
-          Invoke-WebRequest -Uri "$env:API_KEYS" -OutFile "ShareX.UploadersLib\APIKeys\APIKeysLocal.cs"
+          $path = "ShareX.UploadersLib\APIKeys\APIKeysLocal.cs"
+          [System.IO.File]::WriteAllText($path, $env:API_KEYS, [System.Text.UTF8Encoding]::new($false))
 
       - name: Restore NuGet packages
         run: |
@@ -89,7 +105,76 @@ jobs:
           }
 
       - name: Build
-        run: dotnet build --no-restore --configuration "${{ matrix.configuration }}" -p:Platform="${{ matrix.platform }}" --self-contained true /m:1 "${{ env.SOLUTION_FILE_PATH }}"
+        run: dotnet build --no-restore --configuration "${{ matrix.configuration }}" -p:Platform="${{ matrix.platform }}" --self-contained true /m "${{ env.SOLUTION_FILE_PATH }}"
+
+      - name: Download FFmpeg
+        run: |
+          $archivePath = Join-Path $env:RUNNER_TEMP "ffmpeg.zip"
+          $extractPath = Join-Path $env:RUNNER_TEMP "ffmpeg"
+          $ffmpegPlatform = if ("${{ matrix.platform }}" -eq "ARM64") { "winarm64" } else { "win64" }
+          $downloadUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n${{ env.FFMPEG_VERSION }}-latest-$ffmpegPlatform-gpl-${{ env.FFMPEG_VERSION }}.zip"
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $archivePath
+          Expand-Archive -Path $archivePath -DestinationPath $extractPath -Force
+          $ffmpegPath = Get-ChildItem -Path $extractPath -Filter "ffmpeg.exe" -Recurse -File | Select-Object -First 1
+          if ($null -eq $ffmpegPath) {
+            throw "ffmpeg.exe was not found in the downloaded archive."
+          }
+          $destinationPath = "${{ github.workspace }}\ShareX\bin\${{ matrix.configuration }}\${{ env.RUNTIME_ID }}\ffmpeg.exe"
+          Copy-Item -LiteralPath $ffmpegPath.FullName -Destination $destinationPath -Force
+
+      - name: Azure login
+        if: >-
+          (github.ref == 'refs/heads/develop' && matrix.configuration == 'Release') ||
+          (startsWith(github.ref, 'refs/tags/v') &&
+          (matrix.configuration == 'Release' || matrix.configuration == 'Steam' || matrix.configuration == 'MicrosoftStore'))
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign ShareX binaries
+        if: >-
+          (github.ref == 'refs/heads/develop' && matrix.configuration == 'Release') ||
+          (startsWith(github.ref, 'refs/tags/v') &&
+          (matrix.configuration == 'Release' || matrix.configuration == 'Steam' || matrix.configuration == 'MicrosoftStore'))
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ vars.SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ vars.CERTIFICATE_PROFILE_NAME }}
+          files-folder: ${{ github.workspace }}\ShareX\bin\${{ matrix.configuration }}\${{ env.RUNTIME_ID }}
+          files-folder-filter: ShareX*.exe,ShareX*.dll,ffmpeg.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Sign Avalonia binaries
+        if: >-
+          startsWith(github.ref, 'refs/tags/v') &&
+          (matrix.configuration == 'Release' || matrix.configuration == 'Steam' || matrix.configuration == 'MicrosoftStore')
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ vars.SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ vars.CERTIFICATE_PROFILE_NAME }}
+          files-folder: ${{ github.workspace }}\ShareX\bin\${{ matrix.configuration }}\${{ env.RUNTIME_ID }}
+          files-folder-filter: Avalonia*.dll
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Sign Steam launcher
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.configuration == 'Steam'
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ vars.SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ vars.CERTIFICATE_PROFILE_NAME }}
+          files: ${{ github.workspace }}\ShareX.Steam\bin\Steam\ShareX_Launcher.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
 
       - name: Build Setup (x64)
         if: matrix.platform == 'ARM64'
@@ -101,6 +186,20 @@ jobs:
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           & "ShareX.Setup\bin\${{ matrix.configuration }}\win-x64\ShareX.Setup.exe" -silent -job "${{ matrix.configuration }}" -platform "${{ matrix.platform }}"
+
+      - name: Sign setup
+        if: >-
+          (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/v')) &&
+          matrix.configuration == 'Release'
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ vars.SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ vars.CERTIFICATE_PROFILE_NAME }}
+          files: ${{ github.workspace }}\Output\ShareX-${{ env.APP_VERSION }}-setup-${{ env.PLATFORM }}.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
 
       - name: Upload artifact (Setup-x64)
         if: matrix.configuration == 'Release' && matrix.platform == 'x64'
@@ -325,13 +424,11 @@ jobs:
             Output/ShareX-${{ env.APP_VERSION }}-MicrosoftStore-debug-arm64.appx
 
       - name: Release (Stable)
-        env:
-          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-        if: env.CUSTOM_GITHUB_TOKEN != '' && startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
           repository: ${{ github.repository }}
-          token: ${{ env.CUSTOM_GITHUB_TOKEN }}
+          token: ${{ github.token }}
           tag_name: ${{ github.ref_name }}
           name: ShareX ${{ env.APP_VERSION }}
           body_path: ${{ env.RELEASE_BODY_PATH }}

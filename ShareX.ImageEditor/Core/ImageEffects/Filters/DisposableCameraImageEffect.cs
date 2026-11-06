@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class DisposableCameraImageEffect : ImageEffectBase
     public override string Id => "disposable_camera";
     public override string Name => "Disposable camera";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.camera;
+    public override string IconKey => AppIcons.Camera;
     public override string Description => "Simulates the look of a disposable film camera with flash, grain, and warmth.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>

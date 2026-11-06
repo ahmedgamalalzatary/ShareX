@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class GoldenBorderImageEffect : ImageEffectBase
     public override string Id => "golden_border";
     public override string Name => "Golden border";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.crown;
+    public override string IconKey => ImageEffectIcons.Crown;
     public override string Description => "Adds a luxurious picture frame border to the image.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -123,81 +123,89 @@ public sealed class GoldenBorderImageEffect : ImageEffectBase
         float bevelWidth = size * 0.35f * bevel;
 
         // Top highlight
+        using (var ownedShader1 = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, bevelWidth),
+                [highlightColor.WithAlpha((byte)(200 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp))
         using (SKPaint p = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, bevelWidth),
-                [highlightColor.WithAlpha((byte)(200 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp)
+            Shader = ownedShader1
         })
         { canvas.DrawRect(0, 0, width, bevelWidth, p); }
 
         // Left highlight
+        using (var ownedShader2 = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(bevelWidth, 0),
+                [highlightColor.WithAlpha((byte)(180 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp))
         using (SKPaint p = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(bevelWidth, 0),
-                [highlightColor.WithAlpha((byte)(180 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp)
+            Shader = ownedShader2
         })
         { canvas.DrawRect(0, 0, bevelWidth, height, p); }
 
         // Bottom shadow
+        using (var ownedShader3 = SKShader.CreateLinearGradient(new SKPoint(0, height), new SKPoint(0, height - bevelWidth),
+                [darkColor.WithAlpha((byte)(200 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp))
         using (SKPaint p = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(new SKPoint(0, height), new SKPoint(0, height - bevelWidth),
-                [darkColor.WithAlpha((byte)(200 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp)
+            Shader = ownedShader3
         })
         { canvas.DrawRect(0, height - bevelWidth, width, bevelWidth, p); }
 
         // Right shadow
+        using (var ownedShader4 = SKShader.CreateLinearGradient(new SKPoint(width, 0), new SKPoint(width - bevelWidth, 0),
+                [darkColor.WithAlpha((byte)(200 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp))
         using (SKPaint p = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(new SKPoint(width, 0), new SKPoint(width - bevelWidth, 0),
-                [darkColor.WithAlpha((byte)(200 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp)
+            Shader = ownedShader4
         })
         { canvas.DrawRect(width - bevelWidth, 0, bevelWidth, height, p); }
 
         // Inner bevel
         float innerBevelWidth = size * 0.25f * bevel;
 
+        using (var ownedShader5 = SKShader.CreateLinearGradient(new SKPoint(0, size), new SKPoint(0, size - innerBevelWidth),
+                [darkColor.WithAlpha((byte)(160 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp))
         using (SKPaint p = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(new SKPoint(0, size), new SKPoint(0, size - innerBevelWidth),
-                [darkColor.WithAlpha((byte)(160 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp)
+            Shader = ownedShader5
         })
         { canvas.DrawRect(size, size - innerBevelWidth, width - size * 2, innerBevelWidth, p); }
 
+        using (var ownedShader6 = SKShader.CreateLinearGradient(new SKPoint(size, 0), new SKPoint(size - innerBevelWidth, 0),
+                [darkColor.WithAlpha((byte)(140 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp))
         using (SKPaint p = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(new SKPoint(size, 0), new SKPoint(size - innerBevelWidth, 0),
-                [darkColor.WithAlpha((byte)(140 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp)
+            Shader = ownedShader6
         })
         { canvas.DrawRect(size - innerBevelWidth, size, innerBevelWidth, height - size * 2, p); }
 
+        using (var ownedShader7 = SKShader.CreateLinearGradient(new SKPoint(0, height - size), new SKPoint(0, height - size + innerBevelWidth),
+                [lightColor.WithAlpha((byte)(140 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp))
         using (SKPaint p = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(new SKPoint(0, height - size), new SKPoint(0, height - size + innerBevelWidth),
-                [lightColor.WithAlpha((byte)(140 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp)
+            Shader = ownedShader7
         })
         { canvas.DrawRect(size, height - size, width - size * 2, innerBevelWidth, p); }
 
+        using (var ownedShader8 = SKShader.CreateLinearGradient(new SKPoint(width - size, 0), new SKPoint(width - size + innerBevelWidth, 0),
+                [lightColor.WithAlpha((byte)(140 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp))
         using (SKPaint p = new()
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Shader = SKShader.CreateLinearGradient(new SKPoint(width - size, 0), new SKPoint(width - size + innerBevelWidth, 0),
-                [lightColor.WithAlpha((byte)(140 * bevel)), baseColor.WithAlpha(0)], SKShaderTileMode.Clamp)
+            Shader = ownedShader8
         })
         { canvas.DrawRect(width - size, size, innerBevelWidth, height - size * 2, p); }
 

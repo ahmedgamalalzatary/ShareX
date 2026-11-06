@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Drawings;
@@ -36,7 +36,7 @@ public sealed class DrawImageEffect : ImageEffectBase
     public override string Id => "draw_image";
     public override string Name => "Image";
     public override ImageEffectCategory Category => ImageEffectCategory.Drawings;
-    public override string IconKey => LucideIcons.image_plus;
+    public override string IconKey => AppIcons.ImageAdd;
     public override string Description => "Draws an image overlay on the source image.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -206,7 +206,8 @@ public sealed class DrawImageEffect : ImageEffectBase
         if (Opacity < 100)
         {
             byte alpha = (byte)Math.Round(255 * (Opacity / 100f));
-            paint.ColorFilter = SKColorFilter.CreateBlendMode(new SKColor(255, 255, 255, alpha), SKBlendMode.Modulate);
+            using var ownedColorFilter1 = SKColorFilter.CreateBlendMode(new SKColor(255, 255, 255, alpha), SKBlendMode.Modulate);
+            paint.ColorFilter = ownedColorFilter1;
         }
 
         if (Tile)

@@ -24,19 +24,19 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
+using SkiaSharp;
 using System.ComponentModel;
-using System.Drawing;
 
 namespace ShareX.ImageEffectsLib
 {
     [Description("Mean removal")]
     internal class MeanRemoval : ImageEffect
     {
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
             using (bmp)
             {
-                return ConvolutionMatrixManager.MeanRemoval().Apply(bmp);
+                return SkiaConvolutionMatrixManager.MeanRemoval().Apply(bmp);
             }
         }
     }

@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class PencilSketchImageEffect : ImageEffectBase
     public override string Id => "pencil_sketch";
     public override string Name => "Pencil sketch";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.pencil_line;
+    public override string IconKey => AppIcons.Edit;
     public override string Description => "Converts the image to a pencil sketch style drawing.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>

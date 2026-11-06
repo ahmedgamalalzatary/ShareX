@@ -24,19 +24,14 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using ShareX.UploadersLib.Properties;
 using System.Collections.Specialized;
-using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
 
 namespace ShareX.UploadersLib.FileUploaders
 {
     public class HostrFileUploaderService : FileUploaderService
     {
         public override FileDestination EnumValue { get; } = FileDestination.Localhostr;
-
-        public override Icon ServiceIcon => Resources.Hostr;
 
         public override bool CheckConfig(UploadersConfig config)
         {
@@ -50,8 +45,6 @@ namespace ShareX.UploadersLib.FileUploaders
                 DirectURL = config.LocalhostrDirectURL
             };
         }
-
-        public override TabPage GetUploadersConfigTabPage(UploadersConfigForm form) => form.tpHostr;
     }
 
     public sealed class Hostr : FileUploader
@@ -66,14 +59,15 @@ namespace ShareX.UploadersLib.FileUploaders
             Password = password;
         }
 
-        public override UploadResult Upload(Stream stream, string fileName)
+        protected override async Task<UploadResult> UploadCoreAsync(Stream stream, string fileName, CancellationToken cancellationToken)
         {
             UploadResult result = null;
 
             if (!string.IsNullOrEmpty(Email) && !string.IsNullOrEmpty(Password))
             {
                 NameValueCollection headers = RequestHelpers.CreateAuthenticationHeader(Email, Password);
-                result = SendRequestFile("https://api.hostr.co/file", stream, fileName, "file", headers: headers);
+                result = await SendRequestFileAsync("https://api.hostr.co/file", stream, fileName, "file", headers: headers,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (result.IsSuccess)
                 {

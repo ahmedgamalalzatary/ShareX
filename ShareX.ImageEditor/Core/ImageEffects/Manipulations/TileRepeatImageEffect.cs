@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Manipulations;
@@ -34,7 +34,7 @@ public sealed class TileRepeatImageEffect : ImageEffectBase
     public override string Id => "tile_repeat";
     public override string Name => "Tile repeat";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.layout_grid;
+    public override string IconKey => AppIcons.Split;
     public override string Description => "Tiles the image into a grid of smaller copies.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

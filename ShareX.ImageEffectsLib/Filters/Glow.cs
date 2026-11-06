@@ -24,11 +24,9 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
+using SkiaSharp;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Design;
-using System.Drawing.Drawing2D;
-using System.Linq;
 
 namespace ShareX.ImageEffectsLib
 {
@@ -64,13 +62,12 @@ namespace ShareX.ImageEffectsLib
             }
         }
 
-        [DefaultValue(typeof(Color), "White"), Editor(typeof(MyColorEditor), typeof(UITypeEditor)), TypeConverter(typeof(MyColorConverter))]
+        [DefaultValue(typeof(Color), "White")]
         public Color Color { get; set; }
 
         [DefaultValue(false)]
         public bool UseGradient { get; set; }
 
-        [Editor(typeof(GradientEditor), typeof(UITypeEditor))]
         public GradientInfo Gradient { get; set; }
 
         [DefaultValue(typeof(Point), "0, 0")]
@@ -85,7 +82,7 @@ namespace ShareX.ImageEffectsLib
         private GradientInfo AddDefaultGradient()
         {
             GradientInfo gradientInfo = new GradientInfo();
-            gradientInfo.Type = LinearGradientMode.ForwardDiagonal;
+            gradientInfo.Type = ImageGradientMode.ForwardDiagonal;
 
             switch (RandomFast.Next(0, 2))
             {
@@ -106,9 +103,9 @@ namespace ShareX.ImageEffectsLib
             return gradientInfo;
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
-            return ImageHelpers.AddGlow(bmp, Size, Strength, Color, Offset, UseGradient ? Gradient : null);
+            return SkiaImageHelpers.AddGlow(bmp, Size, Strength, Color, Offset, UseGradient ? Gradient : null);
         }
 
         protected override string GetSummary()

@@ -24,6 +24,7 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
+using SkiaSharp;
 using System.ComponentModel;
 using System.Drawing;
 
@@ -51,14 +52,14 @@ namespace ShareX.ImageEffectsLib
             Height = height;
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
             if (Width <= 0 && Height <= 0)
             {
                 return bmp;
             }
 
-            Size size = ImageHelpers.ApplyAspectRatio(Width, Height, bmp);
+            Size size = SkiaImageHelpers.ApplyAspectRatio(Width, Height, bmp);
 
             if ((Mode == ResizeMode.ResizeIfBigger && bmp.Width <= size.Width && bmp.Height <= size.Height) ||
                 (Mode == ResizeMode.ResizeIfSmaller && bmp.Width >= size.Width && bmp.Height >= size.Height))
@@ -66,7 +67,7 @@ namespace ShareX.ImageEffectsLib
                 return bmp;
             }
 
-            return ImageHelpers.ResizeImage(bmp, size);
+            return SkiaImageHelpers.ResizeImage(bmp, size);
         }
 
         protected override string GetSummary()

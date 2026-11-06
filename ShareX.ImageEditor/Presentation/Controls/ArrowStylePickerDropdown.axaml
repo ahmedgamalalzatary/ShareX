@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ShareX.AvaloniaUI.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:ShareX.ImageEditor.Presentation.Converters"
@@ -11,11 +12,11 @@
              d:DesignHeight="40">
     <UserControl.Resources>
         <converters:ArrowStylePreviewGeometryConverter x:Key="ArrowStylePreviewGeometry" />
+        <converters:ArrowStyleDisplayNameConverter x:Key="ArrowStyleDisplayName" />
     </UserControl.Resources>
 
     <Grid HorizontalAlignment="Stretch">
         <Button x:Name="DropdownButton"
-                Classes="editor-button"
                 Click="OnDropdownButtonClick"
                 Height="40"
                 MinWidth="{Binding MinWidth, ElementName=ArrowStylePickerDropdownRoot}"
@@ -24,7 +25,7 @@
                 HorizontalContentAlignment="Stretch">
                         <Grid ColumnDefinitions="*,Auto,Auto">
                                 <TextBlock Grid.Column="0"
-                           Text="{Binding SelectedArrowStyle, ElementName=ArrowStylePickerDropdownRoot}"
+                           Text="{Binding SelectedArrowStyle, ElementName=ArrowStylePickerDropdownRoot, Converter={StaticResource ArrowStyleDisplayName}}"
                            Foreground="{DynamicResource ShareX.Brush.Text.Secondary}"
                            FontSize="12"
                            TextTrimming="CharacterEllipsis"
@@ -44,15 +45,13 @@
                                             Stretch="None"
                                             VerticalAlignment="Center"/>
 
-                <TextBlock Grid.Column="2"
-                           Classes="dropdown-chevron"
-                           Classes.open="{Binding #ArrowStylePopup.IsOpen}"
-                           Text="{x:Static theming:EditorIcons.ChevronDown}"
-                           FontFamily="{DynamicResource ShareX.FontFamily.Icon}"
-                           FontWeight="Normal"
-                           FontSize="10"
-                           Foreground="{DynamicResource ShareX.Brush.Text.Secondary}"
-                           VerticalAlignment="Center"/>
+                <controls:IconPresenter Grid.Column="2"
+                                        Classes="dropdown-chevron"
+                                        Classes.open="{Binding #ArrowStylePopup.IsOpen}"
+                                        Icon="{x:Static theming:EditorIcons.ChevronDown}"
+                                        FontSize="10"
+                                        Foreground="{DynamicResource ShareX.Brush.Text.Secondary}"
+                                        VerticalAlignment="Center"/>
             </Grid>
         </Button>
 
@@ -79,10 +78,10 @@
                                     CommandParameter="{Binding .}"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Center"
-                                    ToolTip.Tip="{Binding .}">
+                                    ToolTip.Tip="{Binding ., Converter={StaticResource ArrowStyleDisplayName}}">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <TextBlock Grid.Column="0"
-                                               Text="{Binding .}"
+                                               Text="{Binding ., Converter={StaticResource ArrowStyleDisplayName}}"
                                                FontSize="14"
                                                Foreground="{DynamicResource ShareX.Brush.Text}"
                                                VerticalAlignment="Center"/>

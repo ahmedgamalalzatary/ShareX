@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class MiniatureImageEffect : ImageEffectBase
     public override string Id => "miniature";
     public override string Name => "Miniature";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.box;
+    public override string IconKey => ImageEffectIcons.Cube;
     public override string Description => "Creates a toy miniature look by blurring top and bottom with boosted saturation.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -56,10 +56,11 @@ public sealed class MiniatureImageEffect : ImageEffectBase
         int w = source.Width, h = source.Height;
 
         // Create blurred version
-        SKBitmap blurred = new(w, h, source.ColorType, source.AlphaType);
+        using SKBitmap blurred = new(w, h, source.ColorType, source.AlphaType);
         using (SKCanvas bc = new(blurred))
         {
-            using SKPaint bp = new() { ImageFilter = SKImageFilter.CreateBlur(radius, radius) };
+            using var ownedImageFilter1 = SKImageFilter.CreateBlur(radius, radius);
+            using SKPaint bp = new() { ImageFilter = ownedImageFilter1 };
             bc.DrawBitmap(source, 0, 0, bp);
         }
 
@@ -106,7 +107,6 @@ public sealed class MiniatureImageEffect : ImageEffectBase
             }
         }
 
-        blurred.Dispose();
         return new SKBitmap(w, h, source.ColorType, source.AlphaType) { Pixels = dst };
     }
 }

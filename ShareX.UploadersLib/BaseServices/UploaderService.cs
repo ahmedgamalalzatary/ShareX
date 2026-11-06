@@ -25,8 +25,6 @@
 
 using ShareX.HelpersLib;
 using System;
-using System.Drawing;
-using System.Windows.Forms;
 
 namespace ShareX.UploadersLib
 {
@@ -37,18 +35,9 @@ namespace ShareX.UploadersLib
         // Unique identifier
         public string ServiceIdentifier => EnumValue.ToString();
 
-        public string ServiceName => ((Enum)(object)EnumValue).GetLocalizedDescription();
-
-        public virtual Icon ServiceIcon { get; }
-
-        public virtual Image ServiceImage { get; }
+        public string ServiceName => ((Enum)(object)EnumValue).GetLocalizedDescription(Localization.Strings.ResourceManager);
 
         public abstract bool CheckConfig(UploadersConfig config);
-
-        public virtual TabPage GetUploadersConfigTabPage(UploadersConfigForm form)
-        {
-            return null;
-        }
 
         public override string ToString()
         {

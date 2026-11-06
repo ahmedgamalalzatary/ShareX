@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="HistoryHelpers_Empty" xml:space="preserve">
+    <value>(tomt)</value>
+  </data>
+  <data name="HistoryHelpers_FileExtensions" xml:space="preserve">
+    <value>Filnamnstillägg:</value>
+  </data>
+  <data name="HistoryHelpers_HistoryItemCounts" xml:space="preserve">
+    <value>Antal historikobjekt:</value>
+  </data>
+  <data name="HistoryHelpers_Hosts" xml:space="preserve">
+    <value>Värdar:</value>
+  </data>
+  <data name="HistoryHelpers_ProcessNames" xml:space="preserve">
+    <value>Processnamn:</value>
+  </data>
+  <data name="HistoryHelpers_Total" xml:space="preserve">
+    <value>Totalt:</value>
+  </data>
+  <data name="HistoryHelpers_YearlyUsages" xml:space="preserve">
+    <value>Årlig användning:</value>
+  </data>
+  <data name="HistoryManager_Error" xml:space="preserve">
+    <value>Fel</value>
+  </data>
+  <data name="HistoryManager_ErrorOccurredWhileReadingHistoryFile" xml:space="preserve">
+    <value>Ett fel inträffade när historikfilen lästes:</value>
+  </data>
+  <data name="HistoryWindow_CalculatingStatistics" xml:space="preserve">
+    <value>Beräknar statistik...</value>
+  </data>
+  <data name="HistoryWindow_ConfirmDeleteFormat" xml:space="preserve">
+    <value>Vill du verkligen ta bort {0}? Åtgärden kan inte ångras.</value>
+  </data>
+  <data name="HistoryWindow_Delete" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+  <data name="HistoryWindow_DeleteFiles" xml:space="preserve">
+    <value>Ta bort filer?</value>
+  </data>
+  <data name="HistoryWindow_DeleteHistoryItems" xml:space="preserve">
+    <value>Ta bort historikobjekt?</value>
+  </data>
+  <data name="HistoryWindow_EditTag" xml:space="preserve">
+    <value>Redigera tagg</value>
+  </data>
+  <data name="HistoryWindow_EnterNewFileName" xml:space="preserve">
+    <value>Ange ett nytt filnamn.</value>
+  </data>
+  <data name="HistoryWindow_EnterTagForHistoryItem" xml:space="preserve">
+    <value>Ange en tagg för historikobjektet.</value>
+  </data>
+  <data name="HistoryWindow_ImportingFiles" xml:space="preserve">
+    <value>Importerar filer...</value>
+  </data>
+  <data name="HistoryWindow_ItemsFormat" xml:space="preserve">
+    <value>{0:N0} objekt</value>
+  </data>
+  <data name="HistoryWindow_NoItemsMatchCurrentFilters" xml:space="preserve">
+    <value>Inga objekt matchar de aktuella filtren</value>
+  </data>
+  <data name="HistoryWindow_Rename" xml:space="preserve">
+    <value>Byt namn</value>
+  </data>
+  <data name="HistoryWindow_RenameFile" xml:space="preserve">
+    <value>Byt namn på fil</value>
+  </data>
+  <data name="HistoryWindow_SelectFolderToImport" xml:space="preserve">
+    <value>Välj mapp att importera</value>
+  </data>
+  <data name="HistoryWindow_SelectedFolderDoesNotExist" xml:space="preserve">
+    <value>Den valda mappen finns inte.</value>
+  </data>
+  <data name="HistoryWindow_SuccessfullyImportedFilesFormat" xml:space="preserve">
+    <value>{0:N0} filer importerades.</value>
+  </data>
+  <data name="HistoryWindow_TheseFilesFormat" xml:space="preserve">
+    <value>de här {0:N0} filerna</value>
+  </data>
+  <data name="HistoryWindow_TheseItemsFormat" xml:space="preserve">
+    <value>de här {0:N0} objekten</value>
+  </data>
+  <data name="HistoryWindow_ThisFile" xml:space="preserve">
+    <value>den här filen</value>
+  </data>
+  <data name="HistoryWindow_ThisItem" xml:space="preserve">
+    <value>det här objektet</value>
+  </data>
+  <data name="HistoryWindow_Unfavorite" xml:space="preserve">
+    <value>Ta bort från favoriter</value>
+  </data>
+  <data name="HistoryWindows_Advanced" xml:space="preserve">
+    <value>Avancerat</value>
+  </data>
+  <data name="HistoryWindows_Advanced_filters" xml:space="preserve">
+    <value>Avancerade filter</value>
+  </data>
+  <data name="HistoryWindows_All_hosts" xml:space="preserve">
+    <value>Alla värdar</value>
+  </data>
+  <data name="HistoryWindows_All_types" xml:space="preserve">
+    <value>Alla typer</value>
+  </data>
+  <data name="HistoryWindows_Analyze_image" xml:space="preserve">
+    <value>Analysera bild...</value>
+  </data>
+  <data name="HistoryWindows_Bottom" xml:space="preserve">
+    <value>Nederst</value>
+  </data>
+  <data name="HistoryWindows_Browse" xml:space="preserve">
+    <value>Bläddra...</value>
+  </data>
+  <data name="HistoryWindows_Cancel" xml:space="preserve">
+    <value>Avbryt</value>
+  </data>
+  <data name="HistoryWindows_Close" xml:space="preserve">
+    <value>Stäng</value>
+  </data>
+  <data name="HistoryWindows_Copy" xml:space="preserve">
+    <value>Kopiera</value>
+  </data>
+  <data name="HistoryWindows_Date" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="HistoryWindows_Date_range" xml:space="preserve">
+    <value>Datumintervall</value>
+  </data>
+  <data name="HistoryWindows_Delete_file_and_history_item" xml:space="preserve">
+    <value>Ta bort fil och historikobjekt...</value>
+  </data>
+  <data name="HistoryWindows_Delete_from_history" xml:space="preserve">
+    <value>Ta bort från historiken...</value>
+  </data>
+  <data name="HistoryWindows_Deletion_URL" xml:space="preserve">
+    <value>Raderings-URL</value>
+  </data>
+  <data name="HistoryWindows_Done" xml:space="preserve">
+    <value>Klar</value>
+  </data>
+  <data name="HistoryWindows_EditImageInPhotoEditor" xml:space="preserve">
+    <value>Redigera i fotoredigeraren...</value>
+  </data>
+  <data name="HistoryWindows_Edit_history_item" xml:space="preserve">
+    <value>Redigera historikobjekt</value>
+  </data>
+  <data name="HistoryWindows_Edit_image" xml:space="preserve">
+    <value>Redigera bild...</value>
+  </data>
+  <data name="HistoryWindows_Edit_item" xml:space="preserve">
+    <value>Redigera objekt...</value>
+  </data>
+  <data name="HistoryWindows_Edit_tag" xml:space="preserve">
+    <value>Redigera tagg...</value>
+  </data>
+  <data name="HistoryWindows_Favorite" xml:space="preserve">
+    <value>Favorit</value>
+  </data>
+  <data name="HistoryWindows_Favorites" xml:space="preserve">
+    <value>Favoriter</value>
+  </data>
+  <data name="HistoryWindows_File" xml:space="preserve">
+    <value>Fil</value>
+  </data>
+  <data name="HistoryWindows_File_name" xml:space="preserve">
+    <value>Filnamn</value>
+  </data>
+  <data name="HistoryWindows_File_name_with_extension" xml:space="preserve">
+    <value>Filnamn med filnamnstillägg</value>
+  </data>
+  <data name="HistoryWindows_File_path" xml:space="preserve">
+    <value>Filsökväg</value>
+  </data>
+  <data name="HistoryWindows_Folder" xml:space="preserve">
+    <value>Mapp</value>
+  </data>
+  <data name="HistoryWindows_Folder_path" xml:space="preserve">
+    <value>Mappsökväg</value>
+  </data>
+  <data name="HistoryWindows_Forum_BBCode_image" xml:space="preserve">
+    <value>Forumbild (BBCode)</value>
+  </data>
+  <data name="HistoryWindows_Forum_BBCode_link" xml:space="preserve">
+    <value>Forumlänk (BBCode)</value>
+  </data>
+  <data name="HistoryWindows_Forum_BBCode_linked_image" xml:space="preserve">
+    <value>Länkad forumbild (BBCode)</value>
+  </data>
+  <data name="HistoryWindows_Forum_image" xml:space="preserve">
+    <value>Forumbild</value>
+  </data>
+  <data name="HistoryWindows_Forum_link" xml:space="preserve">
+    <value>Forumlänk</value>
+  </data>
+  <data name="HistoryWindows_Forum_linked_image" xml:space="preserve">
+    <value>Länkad forumbild</value>
+  </data>
+  <data name="HistoryWindows_HTML_image" xml:space="preserve">
+    <value>HTML-bild</value>
+  </data>
+  <data name="HistoryWindows_HTML_link" xml:space="preserve">
+    <value>HTML-länk</value>
+  </data>
+  <data name="HistoryWindows_HTML_linked_image" xml:space="preserve">
+    <value>Länkad HTML-bild</value>
+  </data>
+  <data name="HistoryWindows_Hide_missing_files" xml:space="preserve">
+    <value>Dölj saknade filer</value>
+  </data>
+  <data name="HistoryWindows_History_settings" xml:space="preserve">
+    <value>Historikinställningar</value>
+  </data>
+  <data name="HistoryWindows_History_statistics" xml:space="preserve">
+    <value>Historikstatistik</value>
+  </data>
+  <data name="HistoryWindows_Host" xml:space="preserve">
+    <value>Värd</value>
+  </data>
+  <data name="HistoryWindows_Image" xml:space="preserve">
+    <value>Bild</value>
+  </data>
+  <data name="HistoryWindows_Image_history_settings" xml:space="preserve">
+    <value>Inställningar för bildhistorik</value>
+  </data>
+  <data name="HistoryWindows_Import" xml:space="preserve">
+    <value>Importera</value>
+  </data>
+  <data name="HistoryWindows_Import_folder" xml:space="preserve">
+    <value>Importera mapp</value>
+  </data>
+  <data name="HistoryWindows_Items_per_batch" xml:space="preserve">
+    <value>Objekt per omgång</value>
+  </data>
+  <data name="HistoryWindows_Load_the_next_batch_near_the_end" xml:space="preserve">
+    <value>Läs in nästa omgång nära slutet</value>
+  </data>
+  <data name="HistoryWindows_Loading" xml:space="preserve">
+    <value>Läser in...</value>
+  </data>
+  <data name="HistoryWindows_Markdown_image" xml:space="preserve">
+    <value>Markdown-bild</value>
+  </data>
+  <data name="HistoryWindows_Markdown_link" xml:space="preserve">
+    <value>Markdown-länk</value>
+  </data>
+  <data name="HistoryWindows_Markdown_linked_image" xml:space="preserve">
+    <value>Länkad Markdown-bild</value>
+  </data>
+  <data name="HistoryWindows_No_history_items" xml:space="preserve">
+    <value>Inga historikobjekt</value>
+  </data>
+  <data name="HistoryWindows_No_image_history_items" xml:space="preserve">
+    <value>Inga objekt i bildhistoriken</value>
+  </data>
+  <data name="HistoryWindows_No_image_preview" xml:space="preserve">
+    <value>Ingen bildförhandsgranskning</value>
+  </data>
+  <data name="HistoryWindows_None" xml:space="preserve">
+    <value>Ingen</value>
+  </data>
+  <data name="HistoryWindows_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="HistoryWindows_One_key_value_pair_per_line" xml:space="preserve">
+    <value>Ett nyckel=värde-par per rad</value>
+  </data>
+  <data name="HistoryWindows_Only_import_image_files" xml:space="preserve">
+    <value>Importera endast bildfiler</value>
+  </data>
+  <data name="HistoryWindows_Open" xml:space="preserve">
+    <value>Öppna</value>
+  </data>
+  <data name="HistoryWindows_Open_image" xml:space="preserve">
+    <value>Öppna bild</value>
+  </data>
+  <data name="HistoryWindows_Pin_to_screen" xml:space="preserve">
+    <value>Fäst på skärmen</value>
+  </data>
+  <data name="HistoryWindows_Remember_search_text" xml:space="preserve">
+    <value>Kom ihåg söktext</value>
+  </data>
+  <data name="HistoryWindows_Remember_window_size_and_position" xml:space="preserve">
+    <value>Kom ihåg fönstrets storlek och position</value>
+  </data>
+  <data name="HistoryWindows_Rename_file" xml:space="preserve">
+    <value>Byt namn på fil...</value>
+  </data>
+  <data name="HistoryWindows_Reset_filters" xml:space="preserve">
+    <value>Återställ filter</value>
+  </data>
+  <data name="HistoryWindows_Save" xml:space="preserve">
+    <value>Spara</value>
+  </data>
+  <data name="HistoryWindows_Search_file_names_and_tags" xml:space="preserve">
+    <value>Sök i filnamn och taggar</value>
+  </data>
+  <data name="HistoryWindows_Select_an_item_to_preview" xml:space="preserve">
+    <value>Välj ett objekt att förhandsgranska</value>
+  </data>
+  <data name="HistoryWindows_Settings" xml:space="preserve">
+    <value>Inställningar</value>
+  </data>
+  <data name="HistoryWindows_ShareX_History" xml:space="preserve">
+    <value>ShareX – Historik</value>
+  </data>
+  <data name="HistoryWindows_ShareX_Image_History" xml:space="preserve">
+    <value>ShareX – Bildhistorik</value>
+  </data>
+  <data name="HistoryWindows_Shortened_URL" xml:space="preserve">
+    <value>Förkortad URL</value>
+  </data>
+  <data name="HistoryWindows_Show_image_files_only" xml:space="preserve">
+    <value>Visa endast bild- och videofiler</value>
+  </data>
+  <data name="HistoryWindows_Show_image_preview" xml:space="preserve">
+    <value>Visa bildförhandsgranskning</value>
+  </data>
+  <data name="HistoryWindows_Skip_duplicate_files" xml:space="preserve">
+    <value>Hoppa över dubblettfiler</value>
+  </data>
+  <data name="HistoryWindows_Stats" xml:space="preserve">
+    <value>Statistik</value>
+  </data>
+  <data name="HistoryWindows_Tags" xml:space="preserve">
+    <value>Taggar</value>
+  </data>
+  <data name="HistoryWindows_Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="HistoryWindows_Thumbnail_URL" xml:space="preserve">
+    <value>Miniatyr-URL</value>
+  </data>
+  <data name="HistoryWindows_Thumbnail_header" xml:space="preserve">
+    <value>Miniatyrrubrik</value>
+  </data>
+  <data name="HistoryWindows_Thumbnail_height" xml:space="preserve">
+    <value>Miniatyrhöjd</value>
+  </data>
+  <data name="HistoryWindows_Thumbnail_width" xml:space="preserve">
+    <value>Miniatyrbredd</value>
+  </data>
+  <data name="HistoryWindows_Toggle_favorite" xml:space="preserve">
+    <value>Växla favoritmarkering</value>
+  </data>
+  <data name="HistoryWindows_Top" xml:space="preserve">
+    <value>Överst</value>
+  </data>
+  <data name="HistoryWindows_TrimAnimatedGif" xml:space="preserve">
+    <value>Trimma animerad GIF...</value>
+  </data>
+  <data name="HistoryWindows_TrimVideo" xml:space="preserve">
+    <value>Trimma video...</value>
+  </data>
+  <data name="HistoryWindows_Type" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="HistoryWindows_URL" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="HistoryWindows_Upload_file" xml:space="preserve">
+    <value>Ladda upp fil</value>
+  </data>
+  <data name="ImageHistoryWindow_CalculatingStatistics" xml:space="preserve">
+    <value>Beräknar statistik...</value>
+  </data>
+  <data name="ImageHistoryWindow_ConfirmDeleteFormat" xml:space="preserve">
+    <value>Vill du verkligen ta bort {0}? Åtgärden kan inte ångras.</value>
+  </data>
+  <data name="ImageHistoryWindow_ConfirmOpenFileFormat" xml:space="preserve">
+    <value>Vill du öppna den här filen?
+
+{0}</value>
+  </data>
+  <data name="ImageHistoryWindow_Delete" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+  <data name="ImageHistoryWindow_DeleteFiles" xml:space="preserve">
+    <value>Ta bort filer?</value>
+  </data>
+  <data name="ImageHistoryWindow_DeleteHistoryItems" xml:space="preserve">
+    <value>Ta bort historikobjekt?</value>
+  </data>
+  <data name="ImageHistoryWindow_EditTag" xml:space="preserve">
+    <value>Redigera tagg</value>
+  </data>
+  <data name="ImageHistoryWindow_EnterNewFileName" xml:space="preserve">
+    <value>Ange ett nytt filnamn.</value>
+  </data>
+  <data name="ImageHistoryWindow_EnterTagForHistoryItem" xml:space="preserve">
+    <value>Ange en tagg för historikobjektet.</value>
+  </data>
+  <data name="ImageHistoryWindow_ImportingFiles" xml:space="preserve">
+    <value>Importerar filer...</value>
+  </data>
+  <data name="ImageHistoryWindow_ItemsFormat" xml:space="preserve">
+    <value>{0:N0} objekt</value>
+  </data>
+  <data name="ImageHistoryWindow_NoItemsMatchCurrentFilter" xml:space="preserve">
+    <value>Inga objekt matchar det aktuella filtret</value>
+  </data>
+  <data name="ImageHistoryWindow_OpenFile" xml:space="preserve">
+    <value>Öppna fil?</value>
+  </data>
+  <data name="ImageHistoryWindow_Rename" xml:space="preserve">
+    <value>Byt namn</value>
+  </data>
+  <data name="ImageHistoryWindow_RenameFile" xml:space="preserve">
+    <value>Byt namn på fil</value>
+  </data>
+  <data name="ImageHistoryWindow_SelectFolderToImport" xml:space="preserve">
+    <value>Välj mapp att importera</value>
+  </data>
+  <data name="ImageHistoryWindow_SelectedFolderDoesNotExist" xml:space="preserve">
+    <value>Den valda mappen finns inte.</value>
+  </data>
+  <data name="ImageHistoryWindow_SuccessfullyImportedFilesFormat" xml:space="preserve">
+    <value>{0:N0} filer importerades.</value>
+  </data>
+  <data name="ImageHistoryWindow_TheseFilesFormat" xml:space="preserve">
+    <value>de här {0:N0} filerna</value>
+  </data>
+  <data name="ImageHistoryWindow_TheseItemsFormat" xml:space="preserve">
+    <value>de här {0:N0} objekten</value>
+  </data>
+  <data name="ImageHistoryWindow_ThisFile" xml:space="preserve">
+    <value>den här filen</value>
+  </data>
+  <data name="ImageHistoryWindow_ThisItem" xml:space="preserve">
+    <value>det här objektet</value>
+  </data>
+  <data name="StatsWindow_AboutADay" xml:space="preserve">
+    <value>cirka {0} per dag</value>
+  </data>
+  <data name="StatsWindow_AboutAWeek" xml:space="preserve">
+    <value>cirka {0} per vecka</value>
+  </data>
+  <data name="StatsWindow_ActiveDays" xml:space="preserve">
+    <value>{0} av {1} aktiva</value>
+  </data>
+  <data name="StatsWindow_Afternoon" xml:space="preserve">
+    <value>Eftermiddag</value>
+  </data>
+  <data name="StatsWindow_All" xml:space="preserve">
+    <value>Alla</value>
+  </data>
+  <data name="StatsWindow_AllYears" xml:space="preserve">
+    <value>Alla år</value>
+  </data>
+  <data name="StatsWindow_BeforeHistory" xml:space="preserve">
+    <value>Innan din historik började</value>
+  </data>
+  <data name="StatsWindow_BusiestDay" xml:space="preserve">
+    <value>Mest aktiva dag</value>
+  </data>
+  <data name="StatsWindow_BusiestOn" xml:space="preserve">
+    <value>mest aktiv på {0}</value>
+  </data>
+  <data name="StatsWindow_BusiestTime" xml:space="preserve">
+    <value>mest aktiv {0}</value>
+  </data>
+  <data name="StatsWindow_CountingSince" xml:space="preserve">
+    <value>Räknat sedan {0} · {1}</value>
+  </data>
+  <data name="StatsWindow_DayOfWeek" xml:space="preserve">
+    <value>Veckodag</value>
+  </data>
+  <data name="StatsWindow_Days" xml:space="preserve">
+    <value>{0} dagar</value>
+  </data>
+  <data name="StatsWindow_Destinations" xml:space="preserve">
+    <value>Mål</value>
+  </data>
+  <data name="StatsWindow_Evening" xml:space="preserve">
+    <value>Kväll</value>
+  </data>
+  <data name="StatsWindow_EveryDay" xml:space="preserve">
+    <value>Varje dag</value>
+  </data>
+  <data name="StatsWindow_FileTypes" xml:space="preserve">
+    <value>Filtyper</value>
+  </data>
+  <data name="StatsWindow_Images" xml:space="preserve">
+    <value>Bilder</value>
+  </data>
+  <data name="StatsWindow_Less" xml:space="preserve">
+    <value>Mindre</value>
+  </data>
+  <data name="StatsWindow_LongestStreak" xml:space="preserve">
+    <value>längsta {0} till {1}</value>
+  </data>
+  <data name="StatsWindow_LongestYet" xml:space="preserve">
+    <value>din längsta hittills</value>
+  </data>
+  <data name="StatsWindow_More" xml:space="preserve">
+    <value>Mer</value>
+  </data>
+  <data name="StatsWindow_Morning" xml:space="preserve">
+    <value>Morgon</value>
+  </data>
+  <data name="StatsWindow_Night" xml:space="preserve">
+    <value>Natt</value>
+  </data>
+  <data name="StatsWindow_NoData" xml:space="preserve">
+    <value>Inga data än</value>
+  </data>
+  <data name="StatsWindow_NoHistory" xml:space="preserve">
+    <value>Inget att räkna än. Skärmbilder och uppladdningar visas här när de har sparats i historiken.</value>
+  </data>
+  <data name="StatsWindow_NoneInPrevious7Days" xml:space="preserve">
+    <value>inga de 7 dagarna innan</value>
+  </data>
+  <data name="StatsWindow_NonePrevious7DaysEither" xml:space="preserve">
+    <value>inga de 7 dagarna innan heller</value>
+  </data>
+  <data name="StatsWindow_NothingYet" xml:space="preserve">
+    <value>inget än</value>
+  </data>
+  <data name="StatsWindow_OneDay" xml:space="preserve">
+    <value>{0} dag</value>
+  </data>
+  <data name="StatsWindow_Other" xml:space="preserve">
+    <value>Annat</value>
+  </data>
+  <data name="StatsWindow_OtherFiles" xml:space="preserve">
+    <value>Övriga filer</value>
+  </data>
+  <data name="StatsWindow_Past7Days" xml:space="preserve">
+    <value>Senaste 7 dagarna</value>
+  </data>
+  <data name="StatsWindow_PastYear" xml:space="preserve">
+    <value>Senaste året</value>
+  </data>
+  <data name="StatsWindow_Recordings" xml:space="preserve">
+    <value>Inspelningar</value>
+  </data>
+  <data name="StatsWindow_Refresh" xml:space="preserve">
+    <value>Uppdatera</value>
+  </data>
+  <data name="StatsWindow_Share" xml:space="preserve">
+    <value>Dela</value>
+  </data>
+  <data name="StatsWindow_ShareToolTip" xml:space="preserve">
+    <value>Ta en bild av statistiken och kör dina uppgifter efter bildtagning på den.</value>
+  </data>
+  <data name="StatsWindow_Stats" xml:space="preserve">
+    <value>Statistik</value>
+  </data>
+  <data name="StatsWindow_Streak" xml:space="preserve">
+    <value>Svit</value>
+  </data>
+  <data name="StatsWindow_TimeOfDay" xml:space="preserve">
+    <value>Tid på dygnet</value>
+  </data>
+  <data name="StatsWindow_Title" xml:space="preserve">
+    <value>ShareX – Statistik</value>
+  </data>
+  <data name="StatsWindow_Today" xml:space="preserve">
+    <value>Idag</value>
+  </data>
+  <data name="StatsWindow_TopApps" xml:space="preserve">
+    <value>Mest fångade appar</value>
+  </data>
+  <data name="StatsWindow_Total" xml:space="preserve">
+    <value>Totalt</value>
+  </data>
+  <data name="StatsWindow_TotalCount" xml:space="preserve">
+    <value>Totalt: {0}</value>
+  </data>
+  <data name="StatsWindow_VsPrevious7Days" xml:space="preserve">
+    <value>mot de 7 dagarna innan</value>
+  </data>
+</root>

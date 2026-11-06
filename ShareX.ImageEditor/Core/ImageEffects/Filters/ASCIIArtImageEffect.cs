@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class ASCIIArtImageEffect : ImageEffectBase
     public override string Id => "ascii_art";
     public override string Name => "ASCII art";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.square_terminal;
+    public override string IconKey => AppIcons.Terminal;
     public override string Description => "Converts the image into ASCII character art.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>
@@ -76,7 +76,7 @@ public sealed class ASCIIArtImageEffect : ImageEffectBase
         using SKCanvas canvas = new SKCanvas(result);
         canvas.Clear(DarkBackground ? new SKColor(12, 12, 12, 255) : SKColors.White);
 
-        SKTypeface? customTypeface = SKTypeface.FromFamilyName("Consolas");
+        using SKTypeface? customTypeface = SKTypeface.FromFamilyName("Consolas");
         using SKFont font = new SKFont(customTypeface ?? SKTypeface.Default, cell * 1.02f);
         using SKPaint paint = new SKPaint
         {
@@ -130,7 +130,6 @@ public sealed class ASCIIArtImageEffect : ImageEffectBase
             }
         }
 
-        customTypeface?.Dispose();
         return result;
     }
 

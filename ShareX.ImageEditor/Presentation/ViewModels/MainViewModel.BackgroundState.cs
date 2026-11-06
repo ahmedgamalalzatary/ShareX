@@ -1,4 +1,4 @@
-﻿#region License Information (GPL v3)
+#region License Information (GPL v3)
 
 /*
     ShareX - A program that allows you to take screenshots and share any file type
@@ -26,8 +26,8 @@
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
-using ShareX.ImageEditor.Hosting;
-using ShareX.ImageEditor.Presentation.Rendering;
+using ShareX.ImageEditor.Integration;
+using ShareX.ImageEditor.Localization;
 using SkiaSharp;
 using System.Collections.ObjectModel;
 
@@ -363,15 +363,15 @@ namespace ShareX.ImageEditor.Presentation.ViewModels
         {
             ObservableCollection<BackgroundModeOption> options =
             [
-                new() { Mode = CanvasBackgroundMode.Gradient, DisplayName = "Gradient" },
-                new() { Mode = CanvasBackgroundMode.Color, DisplayName = "Color" },
-                new() { Mode = CanvasBackgroundMode.Transparent, DisplayName = "Transparent" },
-                new() { Mode = CanvasBackgroundMode.Image, DisplayName = "Image" }
+                new() { Mode = CanvasBackgroundMode.Gradient, DisplayName = Strings.MainViewModel_BackgroundModeGradient },
+                new() { Mode = CanvasBackgroundMode.Color, DisplayName = Strings.MainViewModel_BackgroundModeColor },
+                new() { Mode = CanvasBackgroundMode.Transparent, DisplayName = Strings.MainViewModel_BackgroundModeTransparent },
+                new() { Mode = CanvasBackgroundMode.Image, DisplayName = Strings.MainViewModel_BackgroundModeImage }
             ];
 
             if (EditorServices.DesktopWallpaper?.IsSupported == true)
             {
-                options.Add(new BackgroundModeOption { Mode = CanvasBackgroundMode.Wallpaper, DisplayName = "Wallpaper" });
+                options.Add(new BackgroundModeOption { Mode = CanvasBackgroundMode.Wallpaper, DisplayName = Strings.MainViewModel_BackgroundModeWallpaper });
             }
 
             return options;

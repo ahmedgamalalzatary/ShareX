@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -34,7 +34,7 @@ public sealed class RetroSunsetImageEffect : ImageEffectBase
     public override string Id => "retro_sunset";
     public override string Name => "Retro sunset";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.sunset;
+    public override string IconKey => ImageEffectIcons.Sunset;
     public override string Description => "Overlays retro 80s-style sunset gradient bands.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -71,12 +71,13 @@ public sealed class RetroSunsetImageEffect : ImageEffectBase
         for (int i = 0; i < colors.Length; i++)
             alphaColors[i] = colors[i].WithAlpha(gradientAlpha);
 
-        using SKPaint gradPaint = new()
-        {
-            Shader = SKShader.CreateLinearGradient(
+        using var ownedShader1 = SKShader.CreateLinearGradient(
                 new SKPoint(0, 0), new SKPoint(0, h),
                 alphaColors, positions,
-                SKShaderTileMode.Clamp),
+                SKShaderTileMode.Clamp);
+        using SKPaint gradPaint = new()
+        {
+            Shader = ownedShader1,
             BlendMode = SKBlendMode.Overlay
         };
         canvas.DrawRect(0, 0, w, h, gradPaint);

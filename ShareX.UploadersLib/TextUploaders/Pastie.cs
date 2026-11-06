@@ -23,10 +23,7 @@
 
 #endregion License Information (GPL v3)
 
-using ShareX.UploadersLib.Properties;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
 
 namespace ShareX.UploadersLib.TextUploaders
 {
@@ -36,8 +33,6 @@ namespace ShareX.UploadersLib.TextUploaders
 
         public override bool CheckConfig(UploadersConfig config) => true;
 
-        public override Image ServiceImage => Resources.Pastie;
-
         public override GenericUploader CreateUploader(UploadersConfig config, TaskReferenceHelper taskInfo)
         {
             return new Pastie()
@@ -45,15 +40,13 @@ namespace ShareX.UploadersLib.TextUploaders
                 IsPublic = config.PastieIsPublic
             };
         }
-
-        public override TabPage GetUploadersConfigTabPage(UploadersConfigForm form) => form.tpPastie;
     }
 
     public sealed class Pastie : TextUploader
     {
         public bool IsPublic { get; set; }
 
-        public override UploadResult UploadText(string text, string fileName)
+        protected override async Task<UploadResult> UploadTextCoreAsync(string text, string fileName, CancellationToken cancellationToken)
         {
             UploadResult ur = new UploadResult();
 
@@ -64,7 +57,8 @@ namespace ShareX.UploadersLib.TextUploaders
                 arguments.Add("paste[restricted]", IsPublic ? "0" : "1");
                 arguments.Add("paste[authorization]", "burger");
 
-                SendRequestURLEncoded(HttpMethod.POST, "http://pastie.org/pastes", arguments);
+                await SendRequestURLEncodedAsync(HttpMethod.POST, "http://pastie.org/pastes", arguments,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
                 ur.URL = LastResponseInfo.ResponseURL;
             }
 

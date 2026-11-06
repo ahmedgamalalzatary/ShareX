@@ -23,8 +23,8 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Adjustments;
@@ -33,7 +33,7 @@ public sealed class DehazeImageEffect : AdjustmentImageEffectBase
 {
     public override string Id => "dehaze";
     public override string Name => "Dehaze";
-    public override string IconKey => LucideIcons.sunset;
+    public override string IconKey => ImageEffectIcons.Sunset;
     public override string Description => "Removes or adds atmospheric haze.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [

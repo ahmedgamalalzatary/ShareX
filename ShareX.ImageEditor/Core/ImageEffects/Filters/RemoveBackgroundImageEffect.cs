@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -38,7 +38,7 @@ public sealed class RemoveBackgroundImageEffect : ImageEffectBase
     public override string Id => "remove_background";
     public override string Name => "Remove background";
     public override ImageEffectCategory Category => ImageEffectCategory.Manipulations;
-    public override string IconKey => LucideIcons.scissors;
+    public override string IconKey => AppIcons.Scissors;
     public override string Description => "Removes border-connected background colors and turns them transparent.";
     public override IReadOnlyList<EffectParameter> Parameters =>
     [
@@ -576,7 +576,8 @@ public sealed class RemoveBackgroundImageEffect : ImageEffectBase
 
         using SKBitmap blurredExpanded = new(expandedWidth, expandedHeight, source.ColorType, source.AlphaType);
         using (SKCanvas blurCanvas = new(blurredExpanded))
-        using (SKPaint blurPaint = new() { ImageFilter = SKImageFilter.CreateBlur(sigma, sigma) })
+        using (var ownedImageFilter1 = SKImageFilter.CreateBlur(sigma, sigma))
+        using (SKPaint blurPaint = new() { ImageFilter = ownedImageFilter1 })
         {
             blurCanvas.DrawBitmap(expanded, 0, 0, blurPaint);
         }

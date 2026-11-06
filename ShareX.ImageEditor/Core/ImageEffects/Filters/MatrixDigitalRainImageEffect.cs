@@ -23,9 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+using ShareX.Icons;
 using ShareX.ImageEditor.Core.ImageEffects.Helpers;
 using ShareX.ImageEditor.Core.ImageEffects.Parameters;
-using ShareX.ImageEditor.Presentation.Theming;
 using SkiaSharp;
 
 namespace ShareX.ImageEditor.Core.ImageEffects.Filters;
@@ -35,7 +35,7 @@ public sealed class MatrixDigitalRainImageEffect : ImageEffectBase
     public override string Id => "matrix_digital_rain";
     public override string Name => "Matrix digital rain";
     public override ImageEffectCategory Category => ImageEffectCategory.Filters;
-    public override string IconKey => LucideIcons.terminal;
+    public override string IconKey => AppIcons.Terminal;
     public override string Description => "Overlays a Matrix-style digital rain effect using source luminance.";
 
     public override IReadOnlyList<EffectParameter> Parameters =>
@@ -102,7 +102,7 @@ public sealed class MatrixDigitalRainImageEffect : ImageEffectBase
             canvas.DrawBitmap(source, 0, 0, srcBlendPaint);
         }
 
-        SKTypeface? customTypeface = SKTypeface.FromFamilyName("Consolas");
+        using SKTypeface? customTypeface = SKTypeface.FromFamilyName("Consolas");
         using SKFont glyphFont = new SKFont(customTypeface ?? SKTypeface.Default, cell * 1.02f);
         using SKPaint glyphPaint = new SKPaint
         {
@@ -181,7 +181,6 @@ public sealed class MatrixDigitalRainImageEffect : ImageEffectBase
             }
         }
 
-        customTypeface?.Dispose();
         return result;
     }
 

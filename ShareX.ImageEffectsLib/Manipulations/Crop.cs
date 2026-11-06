@@ -24,18 +24,18 @@
 #endregion License Information (GPL v3)
 
 using ShareX.HelpersLib;
+using SkiaSharp;
 using System.ComponentModel;
 using System.Drawing;
-using System.Windows.Forms;
 
 namespace ShareX.ImageEffectsLib
 {
     internal class Crop : ImageEffect
     {
-        private Padding margin;
+        private ImageMargins margin;
 
-        [DefaultValue(typeof(Padding), "0, 0, 0, 0")]
-        public Padding Margin
+        [DefaultValue(typeof(ImageMargins), "0, 0, 0, 0")]
+        public ImageMargins Margin
         {
             get
             {
@@ -55,11 +55,11 @@ namespace ShareX.ImageEffectsLib
             this.ApplyDefaultPropertyValues();
         }
 
-        public override Bitmap Apply(Bitmap bmp)
+        public override SKBitmap Apply(SKBitmap bmp)
         {
             if (Margin.All == 0) return bmp;
 
-            return ImageHelpers.CropBitmap(bmp, new Rectangle(Margin.Left, Margin.Top, bmp.Width - Margin.Horizontal, bmp.Height - Margin.Vertical));
+            return SkiaImageHelpers.CropBitmap(bmp, new Rectangle(Margin.Left, Margin.Top, bmp.Width - Margin.Horizontal, bmp.Height - Margin.Vertical));
         }
 
         protected override string GetSummary()

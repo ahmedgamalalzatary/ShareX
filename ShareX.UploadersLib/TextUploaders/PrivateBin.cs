@@ -25,25 +25,20 @@
 
 using Newtonsoft.Json;
 using ShareX.HelpersLib;
-using ShareX.UploadersLib.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 
 namespace ShareX.UploadersLib.TextUploaders
 {
     public class PrivateBinUploaderService : TextUploaderService
     {
         public override TextDestination EnumValue { get; } = TextDestination.PrivateBin;
-
-        public override Image ServiceImage => Resources.PrivateBin;
 
         public override bool CheckConfig(UploadersConfig config) => true;
 
@@ -52,15 +47,13 @@ namespace ShareX.UploadersLib.TextUploaders
             var settings = config.PrivateBinSettings;
             return new PrivateBin(settings);
         }
-
-        public override TabPage GetUploadersConfigTabPage(UploadersConfigForm form) => form.tpPrivateBin;
     }
 
     public sealed class PrivateBin(PrivateBinSettings settings) : TextUploader
     {
         private PrivateBinSettings Settings { get; } = settings;
 
-        public override UploadResult UploadText(string text, string fileName)
+        protected override async Task<UploadResult> UploadTextCoreAsync(string text, string fileName, CancellationToken cancellationToken)
         {
             var result = new UploadResult();
 
@@ -95,7 +88,8 @@ namespace ShareX.UploadersLib.TextUploaders
                 headers.Add("Authorization", "Basic " + token);
             }
 
-            SendRequest(HttpMethod.POST, Settings.CustomUrl, JsonConvert.SerializeObject(payload), RequestHelpers.ContentTypeJSON, null, headers);
+            await SendRequestAsync(HttpMethod.POST, Settings.CustomUrl, JsonConvert.SerializeObject(payload), RequestHelpers.ContentTypeJSON, null, headers,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (LastResponseInfo.IsSuccess)
             {
@@ -114,7 +108,7 @@ namespace ShareX.UploadersLib.TextUploaders
                     Errors.Add(response.Message);
             }
             else if (LastResponseInfo.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                Errors.Add("Server require authorization");
+                Errors.Add(Localization.Strings.PrivateBin_Server_requires_authorization);
 
             return result;
         }
@@ -230,8 +224,8 @@ namespace ShareX.UploadersLib.TextUploaders
 
             private byte[] DeriveKey()
             {
-                using var deriveBytes = new Rfc2898DeriveBytes(pastePasswordBytes, Salt, PrivateBinConstants.CIPHER_ITERATION_COUNT, HashAlgorithmName.SHA256);
-                return deriveBytes.GetBytes(PrivateBinConstants.CIPHER_BLOCK_BITS / 8);
+                return Rfc2898DeriveBytes.Pbkdf2(pastePasswordBytes, Salt, PrivateBinConstants.CIPHER_ITERATION_COUNT,
+                    HashAlgorithmName.SHA256, PrivateBinConstants.CIPHER_BLOCK_BITS / 8);
             }
 
             private string CreateCipherText(string plainText)
