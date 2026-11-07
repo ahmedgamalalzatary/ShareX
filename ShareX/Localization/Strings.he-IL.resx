@@ -472,6 +472,18 @@
   <data name="ApplicationSettingsWindow_HotkeyRepeatLimit" xml:space="preserve">
     <value>מרווח החזרה של מקשי קיצור (אלפיות שנייה)</value>
   </data>
+  <data name="ApplicationSettingsWindow_IconPackLabel" xml:space="preserve">
+    <value>ערכת סמלים:</value>
+  </data>
+  <data name="ApplicationSettingsWindow_IconPackLegacy" xml:space="preserve">
+    <value>קלאסי</value>
+  </data>
+  <data name="ApplicationSettingsWindow_IconPackModern" xml:space="preserve">
+    <value>מודרני</value>
+  </data>
+  <data name="ApplicationSettingsWindow_Icons" xml:space="preserve">
+    <value>סמלים</value>
+  </data>
   <data name="ApplicationSettingsWindow_ImagePrintSettings" xml:space="preserve">
     <value>הגדרות הדפסת תמונה...</value>
   </data>
@@ -1556,6 +1568,9 @@
   <data name="MainMenuBuilder_Region" xml:space="preserve">
     <value>אזור...</value>
   </data>
+  <data name="MainMenuBuilder_RegionTransparent" xml:space="preserve">
+    <value>אזור (שקוף)...</value>
+  </data>
   <data name="MainMenuBuilder_RemoteStorageBrowser" xml:space="preserve">
     <value>דפדפן אחסון מרוחק...</value>
   </data>
@@ -2294,6 +2309,9 @@
   <data name="TaskSettingsWindow_CloseOCRWindowAfterOpeningServiceLink" xml:space="preserve">
     <value>סגירת חלון OCR לאחר פתיחת קישור השירות</value>
   </data>
+  <data name="TaskSettingsWindow_CompactRegionCaptureToolbar" xml:space="preserve">
+    <value>סרגל כלים קומפקטי ללכידת אזור</value>
+  </data>
   <data name="TaskSettingsWindow_ConfigureWithEllipsis" xml:space="preserve">
     <value>הגדרה...</value>
   </data>
@@ -2518,6 +2536,9 @@
   </data>
   <data name="TaskSettingsWindow_MoveUp" xml:space="preserve">
     <value>העברה למעלה</value>
+  </data>
+  <data name="TaskSettingsWindow_MultiRegionMode" xml:space="preserve">
+    <value>מצב ריבוי אזורים</value>
   </data>
   <data name="TaskSettingsWindow_Name" xml:space="preserve">
     <value>שם</value>

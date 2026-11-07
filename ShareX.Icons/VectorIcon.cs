@@ -31,8 +31,9 @@ namespace ShareX.Icons;
 /// <summary>A ShareX icon: shapes drawn on a square grid, scaled to whatever size it is shown at.</summary>
 public sealed class VectorIcon
 {
-    private readonly IconStyle _style;
-    private readonly IconShape[] _shapes;
+    private readonly IconStyle _style = IconStyle.Rounded;
+    private readonly IconShape[] _shapes = [];
+    private readonly LegacyIcon? _legacy;
 
     internal VectorIcon(double gridSize, IconStyle style, IconShape[] shapes)
     {
@@ -41,12 +42,29 @@ public sealed class VectorIcon
         _shapes = shapes;
     }
 
+    /// <summary>A full-colour legacy icon, laid out on the grid of the modern icon it stands in for.</summary>
+    internal VectorIcon(double gridSize, LegacyIcon legacy)
+    {
+        GridSize = gridSize;
+        _legacy = legacy;
+    }
+
     /// <summary>The size of the grid the icon is drawn on, which is also the size it is sharpest at.</summary>
     public double GridSize { get; }
 
-    /// <summary>Draws the icon in <paramref name="foreground"/>, centered in the largest square that fits <paramref name="bounds"/>.</summary>
-    public void Draw(DrawingContext context, Rect bounds, IBrush foreground)
+    /// <summary>
+    /// Draws the icon in <paramref name="foreground"/>, centered in the largest square that fits <paramref name="bounds"/>.
+    /// <paramref name="darkTheme"/> picks the variant of a legacy icon made for dark backgrounds; when null, it is
+    /// picked by how light <paramref name="foreground"/> is.
+    /// </summary>
+    public void Draw(DrawingContext context, Rect bounds, IBrush foreground, bool? darkTheme = null)
     {
+        if (_legacy != null)
+        {
+            _legacy.Draw(context, bounds, foreground, darkTheme);
+            return;
+        }
+
         double size = Math.Min(bounds.Width, bounds.Height);
         double scale = size / GridSize;
         Matrix transform = Matrix.CreateScale(scale, scale) *

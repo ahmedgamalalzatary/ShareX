@@ -27,6 +27,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
+using Avalonia.Styling;
 using ShareX.Icons;
 
 namespace ShareX.AvaloniaUI.Controls;
@@ -76,12 +77,36 @@ public class IconPresenter : Control
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == IconProperty)
+        if (change.Property == IconProperty || change.Property == IconPackScope.PackProperty)
         {
-            _icon = IconCatalog.Find(Icon);
-            InvalidateMeasure();
+            UpdateIcon();
+        }
+        else if (change.Property == ThemeVariantScope.ActualThemeVariantProperty)
+        {
             InvalidateVisual();
         }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        IconCatalog.PackChanged += OnPackChanged;
+        UpdateIcon();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        IconCatalog.PackChanged -= OnPackChanged;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void OnPackChanged(object? sender, EventArgs e) => UpdateIcon();
+
+    private void UpdateIcon()
+    {
+        _icon = IconCatalog.Find(Icon, IconPackScope.GetPack(this) ?? IconCatalog.Pack);
+        InvalidateMeasure();
+        InvalidateVisual();
     }
 
     protected override Size MeasureOverride(Size availableSize) =>
@@ -91,7 +116,25 @@ public class IconPresenter : Control
     {
         if (_icon != null && Foreground is IBrush foreground)
         {
-            _icon.Draw(context, new Rect(Bounds.Size), foreground);
+            _icon.Draw(context, new Rect(Bounds.Size), foreground, IsDarkTheme(ActualThemeVariant));
         }
+    }
+
+    private static bool? IsDarkTheme(ThemeVariant? theme)
+    {
+        for (; theme != null; theme = theme.InheritVariant)
+        {
+            if (theme == ThemeVariant.Dark)
+            {
+                return true;
+            }
+
+            if (theme == ThemeVariant.Light)
+            {
+                return false;
+            }
+        }
+
+        return null;
     }
 }

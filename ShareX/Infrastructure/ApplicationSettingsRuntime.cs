@@ -82,6 +82,9 @@ internal static class ApplicationSettingsRuntime
         _hotkeyHost?.ApplyHotkeySettings();
         _hotkeyHost?.UpdateTrayIcon();
 
+        // Official installers replace this fork's custom features. Update this build manually,
+        // including when an older profile or imported settings enable automatic checks.
+        settings.AutoCheckUpdate = false;
         ApplicationState.UpdateManager.AllowAutoUpdate = !SystemOptions.DisableUpdateCheck && settings.AutoCheckUpdate;
         ApplicationState.UpdateManager.UpdateChannel = settings.UpdateChannel;
         ApplicationState.UpdateManager.ConfigureAutoUpdate();

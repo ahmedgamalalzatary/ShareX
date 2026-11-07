@@ -103,6 +103,11 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
         new("Dark", Strings.ApplicationSettingsWindow_Dark),
         new("Light", Strings.ApplicationSettingsWindow_Light)
     ];
+    public IReadOnlyList<EnumOption<IconPack>> IconPackOptions { get; } =
+    [
+        new(IconPack.Modern, Strings.ApplicationSettingsWindow_IconPackModern),
+        new(IconPack.Legacy, Strings.ApplicationSettingsWindow_IconPackLegacy)
+    ];
 
     public SettingsNavigationItem? SelectedNavigationItem
     {
@@ -136,17 +141,7 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
     public bool IsProxyPage => IsPage("proxy");
     public bool IsAdvancedPage => IsPage("advanced");
 
-    public bool UpdatesVisible
-    {
-        get
-        {
-#if STEAM || MicrosoftStore
-            return false;
-#else
-            return !SystemOptions.DisableUpdateCheck;
-#endif
-        }
-    }
+    public bool UpdatesVisible => false;
 
     public bool WindowsIntegrationVisible
     {
@@ -266,6 +261,18 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
             if (value != null)
             {
                 SetSetting(Settings.ThemeOptions.Theme, value.Value, x => Settings.ThemeOptions.Theme = x);
+            }
+        }
+    }
+
+    public EnumOption<IconPack>? SelectedIconPack
+    {
+        get => Find(IconPackOptions, Settings.ThemeOptions.IconPack);
+        set
+        {
+            if (value != null)
+            {
+                SetSetting(Settings.ThemeOptions.IconPack, value.Value, x => Settings.ThemeOptions.IconPack = x);
             }
         }
     }
